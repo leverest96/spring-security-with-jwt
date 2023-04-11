@@ -15,7 +15,6 @@ public class MemberAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        System.out.println("3번");
         // supports 메서드로 Authentication 객체를  AuthenticationProvider가 처리할 수 있는지 확인
         // 처리할 수 없다면 Authentication을 null로 return
         if (!supports(authentication.getClass())) return null;
@@ -29,10 +28,8 @@ public class MemberAuthenticationProvider implements AuthenticationProvider {
 
         // 전달받은 Authentication 객체를 PreAuthenticatedAuthenticationToken으로 형변환
         PreAuthenticatedAuthenticationToken preAuthenticatedToken = (PreAuthenticatedAuthenticationToken) authentication;
-
         // authenticationUserDetailsService를 이용하여 전달받은 토큰에 대한 UserDetails 객체를 가져온다.
         UserDetails userDetails = authenticationUserDetailsService.loadUserDetails(preAuthenticatedToken);
-
         // principal : 사용자를 식별하는 정보 (사용자 아이디, 이메일 주소, 전화번호 등)
         // credentials : 인증에 필요한 자격 증명 정보 (패스워드, 토큰 등)
         // authorities : 사용자가 가지고 있는 권한 정보

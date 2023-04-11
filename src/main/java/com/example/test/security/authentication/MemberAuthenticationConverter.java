@@ -1,4 +1,4 @@
-package com.example.test.security.manager;
+package com.example.test.security.authentication;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,6 @@ public class MemberAuthenticationConverter implements AuthenticationConverter {
 
     @Override
     public Authentication convert(final HttpServletRequest request) {
-        System.out.println("2번");
         // header에 Authorization key가 있는지 확인
         String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
 

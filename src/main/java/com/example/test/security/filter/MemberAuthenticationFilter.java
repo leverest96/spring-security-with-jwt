@@ -1,6 +1,6 @@
 package com.example.test.security.filter;
 
-import com.example.test.security.manager.MemberAuthenticationConverter;
+import com.example.test.security.authentication.MemberAuthenticationConverter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,7 +30,6 @@ public class MemberAuthenticationFilter extends AuthenticationFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        System.out.println("1번");
         try {
             // request를 AuthenticationConverter를 통해 Authentication 객체로 변환
             MemberAuthenticationConverter authenticationConverter = new MemberAuthenticationConverter();

@@ -14,10 +14,12 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 
 @RequiredArgsConstructor
 @Slf4j
+// 사용자의 데이터를 로드하기 위한 클래스
 public class MemberDetailsService implements AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
     private final JwtProvider accessTokenProvider;
 
     @Override
+    // PreAuthenticatedAuthenticationToken을 기반으로 UserDetails 생성
     public UserDetails loadUserDetails(final PreAuthenticatedAuthenticationToken token) throws AuthenticationException {
         System.out.println("4번");
         try {
@@ -27,13 +29,17 @@ public class MemberDetailsService implements AuthenticationUserDetailsService<Pr
             final DecodedJWT decodedAccessToken = accessTokenProvider.verify(accessToken);
 
             // 해독된 jwt 토큰에서 userId를 읽어온다.
-            final String userId = decodedAccessToken.getClaim(AccessTokenClaim.USER_ID.getClaim()).asString();
+            final int userId = decodedAccessToken.getClaim(AccessTokenClaim.USER_ID.getClaim()).asInt();
+            final String nickname = decodedAccessToken.getClaim(AccessTokenClaim.NICKNAME.getClaim()).asString();
+            final String[] role = {decodedAccessToken.getClaim(AccessTokenClaim.ROLE.getClaim()).asString()};
 
             log.info("Member authentication request: {}", userId);
 
             // userId를 통해 memberdetails를 만들어낸다.
             return MemberDetails.builder()
                     .userId(userId)
+                    .nickname(nickname)
+                    .authorities(role)
                     .build();
         } catch (final JWTVerificationException ex) {
             throw new BadCredentialsException(ex.getMessage());

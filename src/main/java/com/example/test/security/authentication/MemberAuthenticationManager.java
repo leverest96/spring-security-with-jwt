@@ -1,4 +1,4 @@
-package com.example.test.security.manager;
+package com.example.test.security.authentication;
 
 // AuthenticationManager과 AuthenticationProvider 중 무엇을 구현해야할지에 대한 chatgpt의 답변
 // AuthenticationManager은 AuthenticationProvider의 집합체입니다.

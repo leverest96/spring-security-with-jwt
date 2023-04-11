@@ -3,7 +3,7 @@ package com.example.test.security.config;
 import com.example.test.security.exception.AccessDeniedExceptionHandler;
 import com.example.test.security.exception.AuthenticationExceptionHandler;
 import com.example.test.security.filter.MemberAuthenticationFilter;
-import com.example.test.security.manager.MemberAuthenticationConverter;
+import com.example.test.security.authentication.MemberAuthenticationConverter;
 import com.example.test.security.properties.jwt.AccessTokenProperties;
 import com.example.test.security.properties.jwt.RefreshTokenProperties;
 import com.example.test.security.properties.security.SecurityCorsProperties;
@@ -55,9 +55,11 @@ public class SecurityConfig {
                 .httpBasic().disable()
                 .rememberMe().disable();
 
-        http.authorizeHttpRequests()
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .anyRequest().permitAll();
+        http.authorizeHttpRequests((authorize) -> authorize
+                .requestMatchers(HttpMethod.POST, "/user/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/").permitAll()
+                .anyRequest().authenticated()
+        );
 
         http.exceptionHandling()
                 .authenticationEntryPoint(authenticationEntryPoint)
@@ -72,7 +74,8 @@ public class SecurityConfig {
     public WebSecurityCustomizer webSecurityCustomizer() {
         return web -> web.ignoring()
                 .requestMatchers(CorsUtils::isPreFlightRequest)
-                .requestMatchers(PathRequest.toStaticResources().atCommonLocations());
+                .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
+                .requestMatchers(PathRequest.toH2Console()); // H2 콘솔에 대한 Security 무시
     }
 
     @Bean
