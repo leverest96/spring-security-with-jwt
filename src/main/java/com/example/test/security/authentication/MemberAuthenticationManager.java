@@ -1,16 +1,25 @@
-package com.example.test.security.authentication;
-
-// AuthenticationManager과 AuthenticationProvider 중 무엇을 구현해야할지에 대한 chatgpt의 답변
-// AuthenticationManager은 AuthenticationProvider의 집합체입니다.
-// 즉, AuthenticationProvider를 등록하고, 등록된 AuthenticationProvider 중 하나를 사용하여 Authentication을 처리하는 역할을 합니다.
-// 따라서, AuthenticationManager를 직접 커스터마이징하지 않고,
-// 필요한 경우에는 AuthenticationProvider를 직접 커스터마이징하여 AuthenticationManager에 등록하여 사용할 수 있습니다.
-// 이를 통해, 해당 AuthenticationProvider에서만 처리하고자 하는 로직을 구현하고,
-// 다른 AuthenticationProvider에서는 그대로 사용하면서 AuthenticationManager의 역할을 충실하게 수행할 수 있습니다.
-// 따라서, AuthenticationProvider를 커스터마이징하는 것만으로도 대부분의 경우 충분합니다.
-// 하지만, AuthenticationManager를 커스터마이징해야 하는 특별한 경우가 있을 수도 있습니다.
-// 예를 들어, AuthenticationProvider의 구성이 복잡하고 다양한 경우 등이 그러한 예시가 될 수 있습니다.
-
+//package com.example.test.security.authentication;
+//
+//// AuthenticationManager과 AuthenticationProvider 중 무엇을 구현해야할지에 대한 chatgpt의 답변
+//// AuthenticationManager은 AuthenticationProvider의 집합체입니다.
+//// 즉, AuthenticationProvider를 등록하고, 등록된 AuthenticationProvider 중 하나를 사용하여 Authentication을 처리하는 역할을 합니다.
+//// 따라서, AuthenticationManager를 직접 커스터마이징하지 않고,
+//// 필요한 경우에는 AuthenticationProvider를 직접 커스터마이징하여 AuthenticationManager에 등록하여 사용할 수 있습니다.
+//// 이를 통해, 해당 AuthenticationProvider에서만 처리하고자 하는 로직을 구현하고,
+//// 다른 AuthenticationProvider에서는 그대로 사용하면서 AuthenticationManager의 역할을 충실하게 수행할 수 있습니다.
+//// 따라서, AuthenticationProvider를 커스터마이징하는 것만으로도 대부분의 경우 충분합니다.
+//// 하지만, AuthenticationManager를 커스터마이징해야 하는 특별한 경우가 있을 수도 있습니다.
+//// 예를 들어, AuthenticationProvider의 구성이 복잡하고 다양한 경우 등이 그러한 예시가 될 수 있습니다.
+//
+//import lombok.RequiredArgsConstructor;
+//import org.springframework.context.annotation.Configuration;
+//import org.springframework.security.authentication.AuthenticationManager;
+//import org.springframework.security.authentication.ProviderNotFoundException;
+//import org.springframework.security.core.Authentication;
+//import org.springframework.security.core.AuthenticationException;
+//
+//import java.util.List;
+//
 //@RequiredArgsConstructor
 //@Configuration
 //public class MemberAuthenticationManager implements AuthenticationManager {
@@ -18,6 +27,7 @@ package com.example.test.security.authentication;
 //
 //    @Override
 //    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+//        System.out.println("통과 중이니?");
 //        AuthenticationException lastException = null;
 //
 //        // Authentication 객체를 받아서, 해당 객체를 처리할 수 있는 AuthenticationProvider를 찾아서 인증을 수행

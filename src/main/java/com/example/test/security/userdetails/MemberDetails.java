@@ -11,20 +11,20 @@ import java.util.Collection;
 @RequiredArgsConstructor
 // 사용자 정보를 제공하기 위한 용도의 클래스로, 보안 목적으로 스프링 시큐리티에서 직접 사용되진 않고 Authentication 객체에 캡슐화되어 보관
 public class MemberDetails implements UserDetails {
-    private final int userId;
+    private final String userId;
 
     private final String nickname;
 
     private final Collection<? extends GrantedAuthority> authorities;
 
     @Builder
-    public MemberDetails(int userId, String nickname, String... authorities) {
+    public MemberDetails(String userId, String nickname, String... authorities) {
         this.userId = userId;
         this.nickname = nickname;
         this.authorities = (authorities == null) ? (null) : (AuthorityUtils.createAuthorityList(authorities));
     }
 
-    public int getUserId() {
+    public String getUserId() {
         return userId;
     }
 

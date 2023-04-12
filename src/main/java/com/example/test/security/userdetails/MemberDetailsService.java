@@ -2,8 +2,8 @@ package com.example.test.security.userdetails;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.example.test.security.properties.jwt.AccessTokenProperties.AccessTokenClaim;
-import com.example.test.security.utility.JwtProvider;
+import com.example.test.properties.jwt.AccessTokenProperties.AccessTokenClaim;
+import com.example.test.utility.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -21,7 +21,6 @@ public class MemberDetailsService implements AuthenticationUserDetailsService<Pr
     @Override
     // PreAuthenticatedAuthenticationToken을 기반으로 UserDetails 생성
     public UserDetails loadUserDetails(final PreAuthenticatedAuthenticationToken token) throws AuthenticationException {
-        System.out.println("4번");
         try {
             // 토큰의 credentials를 읽는다.
             final String accessToken = (String) token.getCredentials();
@@ -29,7 +28,7 @@ public class MemberDetailsService implements AuthenticationUserDetailsService<Pr
             final DecodedJWT decodedAccessToken = accessTokenProvider.verify(accessToken);
 
             // 해독된 jwt 토큰에서 userId를 읽어온다.
-            final int userId = decodedAccessToken.getClaim(AccessTokenClaim.USER_ID.getClaim()).asInt();
+            final String userId = decodedAccessToken.getClaim(AccessTokenClaim.USER_ID.getClaim()).asString();
             final String nickname = decodedAccessToken.getClaim(AccessTokenClaim.NICKNAME.getClaim()).asString();
             final String[] role = {decodedAccessToken.getClaim(AccessTokenClaim.ROLE.getClaim()).asString()};
 

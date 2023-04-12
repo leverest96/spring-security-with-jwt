@@ -1,11 +1,12 @@
 function logout() {
-    const result = $.removeCookie('accessToken', {
-        'path': '/'
+    $.ajax({
+        type: 'POST',
+        url: '/api/member/logout',
+        contentType: 'application/json'
+    }).done(function () {
+        alert('로그인을 성공했습니다.');
+        window.location.replace('/');
+    }).fail(function () {
+        alert('로그인을 실패했습니다.');
     });
-
-    if (result) {
-        alert('로그아웃을 성공했습니다.');
-    } else {
-        alert('로그인 상태가 아닙니다.');
-    }
 }
