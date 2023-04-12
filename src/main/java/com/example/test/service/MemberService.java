@@ -7,6 +7,8 @@ import com.example.test.dto.MemberLoginRequestDto;
 import com.example.test.dto.MemberLoginResponseDto;
 import com.example.test.dto.MemberRegisterRequestDto;
 import com.example.test.dto.MemberRegisterResponseDto;
+import com.example.test.exception.MemberException;
+import com.example.test.exception.status.MemberStatus;
 import com.example.test.repository.MemberRepository;
 import com.example.test.utility.JwtProvider;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +39,7 @@ public class MemberService {
     @Transactional
     public MemberRegisterResponseDto register(final MemberRegisterRequestDto requestDto) {
         if (checkEmailExistence(requestDto.getEmail())) {
-            throw new IllegalArgumentException("no email");
+            throw new MemberException(MemberStatus.EXISTING_EMAIL);
         }
 
         final Member member = Member.builder()
@@ -58,13 +60,13 @@ public class MemberService {
         final Optional<Member> result = memberRepository.findByEmail(requestDto.getEmail());
 
         if (result.isEmpty()) {
-            throw new IllegalArgumentException("empty member");
+            throw new MemberException(MemberStatus.NOT_EXISTING_EMAIL);
         }
 
         final Member member = result.get();
 
         if (!passwordEncoder.matches(requestDto.getPassword(), member.getPassword())) {
-            throw new IllegalArgumentException("password incorrect");
+            throw new MemberException(MemberStatus.INCORRECT_PASSWORD);
         }
 
         final Map<String, String> payload = new HashMap<>();

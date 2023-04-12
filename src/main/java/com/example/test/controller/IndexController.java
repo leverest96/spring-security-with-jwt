@@ -37,6 +37,7 @@ public class IndexController {
     // @AuthenticationPrincipal 어노테이션을 적용하면 SecurityContext에 저장된 Authentication의 Principal을 해당 파라미터에 주입
     public String directMemberPage(@AuthenticationPrincipal final MemberDetails memberDetails,
                                    final Model model) {
+        model.addAttribute("email", memberDetails.getEmail());
         model.addAttribute("nickname", memberDetails.getNickname());
 
         return "member";
@@ -46,6 +47,7 @@ public class IndexController {
     // @AuthenticationPrincipal 어노테이션을 적용하면 SecurityContext에 저장된 Authentication의 Principal을 해당 파라미터에 주입
     public String directAdminPage(@AuthenticationPrincipal final MemberDetails memberDetails,
                                   final Model model) {
+        model.addAttribute("email", memberDetails.getEmail());
         model.addAttribute("nickname", memberDetails.getNickname());
 
         return "admin";

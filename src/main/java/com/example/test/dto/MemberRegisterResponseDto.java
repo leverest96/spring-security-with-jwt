@@ -7,7 +7,5 @@ import lombok.*;
 @Builder
 @RequiredArgsConstructor
 public class MemberRegisterResponseDto {
-
     private final String nickname;
-
 }

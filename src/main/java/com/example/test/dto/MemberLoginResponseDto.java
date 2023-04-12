@@ -8,8 +8,6 @@ import lombok.RequiredArgsConstructor;
 @Builder
 @Getter
 public class MemberLoginResponseDto {
-
     private final String accessToken;
     private final String refreshToken;
-
 }

@@ -29,6 +29,7 @@ public class MemberDetailsService implements AuthenticationUserDetailsService<Pr
 
             // 해독된 jwt 토큰에서 userId를 읽어온다.
             final String userId = decodedAccessToken.getClaim(AccessTokenClaim.USER_ID.getClaim()).asString();
+            final String email = decodedAccessToken.getClaim(AccessTokenClaim.EMAIL.getClaim()).asString();
             final String nickname = decodedAccessToken.getClaim(AccessTokenClaim.NICKNAME.getClaim()).asString();
             final String[] role = {decodedAccessToken.getClaim(AccessTokenClaim.ROLE.getClaim()).asString()};
 
@@ -37,6 +38,7 @@ public class MemberDetailsService implements AuthenticationUserDetailsService<Pr
             // userId를 통해 memberdetails를 만들어낸다.
             return MemberDetails.builder()
                     .userId(userId)
+                    .email(email)
                     .nickname(nickname)
                     .authorities(role)
                     .build();

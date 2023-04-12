@@ -8,7 +8,5 @@ import lombok.*;
 @RequiredArgsConstructor
 public class MemberLoginRequestDto {
     private final String email;
-
     private final String password;
-
 }

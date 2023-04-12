@@ -13,19 +13,22 @@ import java.util.Collection;
 public class MemberDetails implements UserDetails {
     private final String userId;
 
+    private final String email;
+
     private final String nickname;
 
     private final Collection<? extends GrantedAuthority> authorities;
 
     @Builder
-    public MemberDetails(String userId, String nickname, String... authorities) {
+    public MemberDetails(final String userId, final String email, final String nickname, final String... authorities) {
         this.userId = userId;
         this.nickname = nickname;
+        this.email = email;
         this.authorities = (authorities == null) ? (null) : (AuthorityUtils.createAuthorityList(authorities));
     }
 
-    public String getUserId() {
-        return userId;
+    public String getEmail() {
+        return email;
     }
 
     public String getNickname() {
