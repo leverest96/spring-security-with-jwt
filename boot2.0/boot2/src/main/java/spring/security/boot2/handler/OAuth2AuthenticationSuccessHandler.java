@@ -11,8 +11,7 @@ import org.springframework.web.util.WebUtils;
 import spring.security.boot2.domain.Member;
 import spring.security.boot2.properties.AccessTokenProperties;
 import spring.security.boot2.repository.MemberRepository;
-import spring.security.boot2.repository.OAuthRepository;
-import spring.security.boot2.userdetail.CustomOAuth2MemberDetails;
+import spring.security.boot2.userdetail.CustomOidcUserService;
 import spring.security.boot2.util.JwtProvider;
 import spring.security.boot2.util.StringUtility;
 
@@ -28,7 +27,6 @@ import java.util.Optional;
 @Slf4j
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     private final MemberRepository memberRepository;
-    private final OAuthRepository oAuthRepository;
 
     private final JwtProvider accessTokenProvider;
     private final JwtProvider refreshTokenProvider;
@@ -41,7 +39,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         final Cookie accessTokenCookie = WebUtils.getCookie(request, AccessTokenProperties.COOKIE_NAME);
         final String accessToken = (accessTokenCookie == null) ? (null) : (accessTokenCookie.getValue());
 
-        final CustomOAuth2MemberDetails memberDetails = (CustomOAuth2MemberDetails) authentication.getPrincipal();
+        final CustomOidcUserService memberDetails = (CustomOidcUserService) authentication.getPrincipal();
 
         final OAuth oAuth = oAuthRepository.findByIdentifierAndProvider(memberDetails.getName(), memberDetails.getRegistrationId())
                 .orElseGet(() -> {

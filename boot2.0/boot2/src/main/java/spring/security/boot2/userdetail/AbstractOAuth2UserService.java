@@ -6,39 +6,52 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
-import spring.security.boot2.domain.Member;
+import spring.security.boot2.domain.oauth.GoogleUser;
+import spring.security.boot2.domain.oauth.KeycloakUser;
+import spring.security.boot2.domain.oauth.NaverUser;
 import spring.security.boot2.domain.oauth.ProviderUser;
-import spring.security.boot2.repository.MemberRepository;
 import spring.security.boot2.security.converter.ProviderUserConverter;
 import spring.security.boot2.security.converter.ProviderUserRequest;
+import spring.security.boot2.service.MemberService;
 
 @Service
 @Getter
 @RequiredArgsConstructor
 public abstract class AbstractOAuth2UserService {
-    private UserService userService;
-    private MemberRepository memberRepository;
+    private final MemberService memberService;
 
-    private SelfCertification certification;
+//    private SelfCertification certification;
 
     private final ProviderUserConverter<ProviderUserRequest, ProviderUser> providerUserConverter;
 
-    public void selfCertificate(ProviderUser providerUser){
-        certification.checkCertification(providerUser);
-    }
+//    public void selfCertificate(ProviderUser providerUser){
+//        certification.checkCertification(providerUser);
+//    }
 
     public void register(ProviderUser providerUser, OAuth2UserRequest userRequest){
-        Member member = memberRepository.findByUsername(providerUser.getUsername());
-
-        if(user == null){
+        if (memberService.checkExistence(providerUser.getUsername())) {
             ClientRegistration clientRegistration = userRequest.getClientRegistration();
-            userService.register(clientRegistration.getRegistrationId(),providerUser);
-        }else{
-            System.out.println("userRequest = " + userRequest);
+
+            memberService.register(clientRegistration.getRegistrationId(), providerUser);
         }
     }
 
-    public ProviderUser providerUser(ProviderUserRequest providerUserRequest){
-        return providerUserConverter.convert(providerUserRequest);
+    public ProviderUser providerUser(
+//            ProviderUserRequest providerUserRequest,
+                                     ClientRegistration clientRegistration, OAuth2User oAuth2User) {
+        String registrationId = clientRegistration.getRegistrationId();
+
+        if (registrationId.equals("keycloak")) {
+            return new KeycloakUser(oAuth2User, clientRegistration);
+        } else if (registrationId.equals("google")) {
+            return new GoogleUser(oAuth2User, clientRegistration);
+        } else if (registrationId.equals("naver")) {
+            return new NaverUser(oAuth2User, clientRegistration);
+//        } else if (registrationId.equals("kakao")) {
+//            return new KakaoUser(oAuth2User, clientRegistration);
+        }
+
+//        return providerUserConverter.convert(providerUserRequest);
+        return null;
     }
 }

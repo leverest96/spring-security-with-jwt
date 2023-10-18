@@ -17,7 +17,6 @@ import java.util.Map;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member implements ProviderUser {
-    public static final int NICKNAME_MAX_LENGTH = 20;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,13 +32,15 @@ public class Member implements ProviderUser {
     private List<? extends GrantedAuthority> authorities;
 
     @Builder
-    public Member(String id,
+    public Member(String registrationId,
+                  String id,
                   String username,
                   String password,
                   String email,
                   String picture,
                   String provider,
                   List<? extends GrantedAuthority> authorities) {
+        this.registrationId = registrationId;
         this.id = id;
         this.username = username;
         this.password = password;

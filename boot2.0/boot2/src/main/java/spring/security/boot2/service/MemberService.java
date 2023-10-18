@@ -11,16 +11,21 @@ import spring.security.boot2.repository.MemberRepository;
 public class MemberService {
     private final MemberRepository memberRepository;
 
-    public void checkCertification(ProviderUser providerUser) {
-        Member member = memberRepository.findByUsername(providerUser.getId());
-
-        boolean bool = providerUser.getProvider().equals("none") || providerUser.getProvider().equals("naver");
-
-        providerUser.isCertificated(bool);
+    public boolean checkExistence(final String username) {
+        return memberRepository.findByUsername(username).isEmpty();
     }
 
-    public void register(ProviderUser providerUser) {
+//    public void checkCertification(ProviderUser providerUser) {
+//        Member member = memberRepository.findByUsername(providerUser.getId());
+//
+//        boolean bool = providerUser.getProvider().equals("none") || providerUser.getProvider().equals("naver");
+//
+//        providerUser.isCertificated(bool);
+//    }
+
+    public void register(String registrationId, ProviderUser providerUser) {
         Member member = Member.builder()
+                .registrationId(registrationId)
                 .id(providerUser.getId())
                 .username(providerUser.getUsername())
                 .password(providerUser.getPassword())
