@@ -14,9 +14,6 @@ import javax.servlet.http.HttpServletRequest;
 
 @RequiredArgsConstructor
 public class CustomAuthenticationConverter implements AuthenticationConverter {
-    public static final String AUTHORIZATION_HEADER = "Authorization";
-    public static final String BEARER_PREFIX = "Bearer ";
-
     private final AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource;
 
     public CustomAuthenticationConverter() {
@@ -26,6 +23,7 @@ public class CustomAuthenticationConverter implements AuthenticationConverter {
     @Override
     public Authentication convert(final HttpServletRequest request) {
         final Cookie accessTokenCookie = WebUtils.getCookie(request, AccessTokenProperties.COOKIE_NAME);
+
         final String accessToken = (accessTokenCookie == null) ? (null) : (accessTokenCookie.getValue());
 
         final PreAuthenticatedAuthenticationToken result = new PreAuthenticatedAuthenticationToken(null, accessToken);

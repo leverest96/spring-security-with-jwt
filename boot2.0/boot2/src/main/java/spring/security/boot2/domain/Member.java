@@ -4,29 +4,93 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import spring.security.boot2.domain.oauth.ProviderUser;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-@Getter
 @Entity
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Member {
+public class Member implements ProviderUser {
+    public static final int NICKNAME_MAX_LENGTH = 20;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long memberId;
+    private String registrationId;
 
-    private String email;
-
+    private String id;
+    private String username;
     private String password;
+    private String email;
+    private String picture;
+    private boolean isCertificated;
+    private String provider;
+    private List<? extends GrantedAuthority> authorities;
 
     @Builder
-    public Member(Long memberId, String email, String password){
-        this.memberId = memberId;
-        this.email = email;
+    public Member(String id,
+                  String username,
+                  String password,
+                  String email,
+                  String picture,
+                  String provider,
+                  List<? extends GrantedAuthority> authorities) {
+        this.id = id;
+        this.username = username;
         this.password = password;
+        this.email = email;
+        this.picture = picture;
+        this.provider = provider;
+        this.authorities = authorities;
+    }
+
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getEmail() {
+        return email;
+    }
+
+    @Override
+    public String getProvider() {
+        return provider;
+    }
+
+    @Override
+    public String getPicture() {
+        return null;
+    }
+
+    @Override
+    public List<? extends GrantedAuthority> getAuthorities() {
+        return authorities;
+    }
+
+    @Override
+    public Map<String, Object> getAttributes() {
+        return null;
+    }
+
+    @Override
+    public OAuth2User getOAuth2User() {
+        return null;
     }
 }

@@ -15,8 +15,6 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        if (!supports(authentication.getClass())) return null;
-
         if (authentication.getCredentials() == null) {
             throw new BadCredentialsException("No access token credentials found in request");
         }

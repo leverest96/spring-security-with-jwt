@@ -13,10 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-// request 요청당 1회 가장 먼저 응답
-// AuthenticationFilter는 OncePerRequestFilter가 extends 되어있다.
 public class CustomAuthenticationFilter extends AuthenticationFilter {
-    // 사용할 AuthenticationManager는 아래 생성자에서 initialize된다.
     private final AuthenticationManager authenticationManager;
 
     public CustomAuthenticationFilter(AuthenticationManager authenticationManager,

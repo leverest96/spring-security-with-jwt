@@ -58,13 +58,13 @@ public class JwtProvider {
         try {
             Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token);
             return true;
-        } catch (MalformedJwtException e) { // 유효하지 않은 JWT
+        } catch (MalformedJwtException e) {
             throw new MalformedJwtException("jwt not valid");
-        } catch (ExpiredJwtException e) { // 만료된 JWT
+        } catch (ExpiredJwtException e) {
             throw new ExpiredJwtException(null, null, "expired");
-        } catch (UnsupportedJwtException e) { // 지원하지 않는 JWT
+        } catch (UnsupportedJwtException e) {
             throw new UnsupportedJwtException("unsupported jwt");
-        } catch (IllegalArgumentException e) { // 빈값
+        } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("empty jwt");
         }
     }
