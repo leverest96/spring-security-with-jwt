@@ -8,12 +8,16 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.WebUtils;
-import spring.security.boot2.domain.Member;
+import spring.security.boot2.common.util.CookieUtility;
+import spring.security.boot2.models.users.Member;
+import spring.security.boot2.models.users.PrincipalUser;
+import spring.security.boot2.models.users.ProviderUser;
 import spring.security.boot2.properties.AccessTokenProperties;
+import spring.security.boot2.properties.RefreshTokenProperties;
 import spring.security.boot2.repository.MemberRepository;
-import spring.security.boot2.userdetail.CustomOidcUserService;
-import spring.security.boot2.util.JwtProvider;
-import spring.security.boot2.util.StringUtility;
+import spring.security.boot2.service.CustomOidcUserService;
+import spring.security.boot2.common.util.JwtProvider;
+import spring.security.boot2.common.util.StringUtility;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -26,6 +30,8 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 @Slf4j
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+    public static final String REDIRECT_URL = "/";
+
     private final MemberRepository memberRepository;
 
     private final JwtProvider accessTokenProvider;
@@ -39,77 +45,38 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         final Cookie accessTokenCookie = WebUtils.getCookie(request, AccessTokenProperties.COOKIE_NAME);
         final String accessToken = (accessTokenCookie == null) ? (null) : (accessTokenCookie.getValue());
 
-        final CustomOidcUserService memberDetails = (CustomOidcUserService) authentication.getPrincipal();
+        final PrincipalUser principalUser = (PrincipalUser) authentication.getPrincipal();
 
-        final OAuth oAuth = oAuthRepository.findByIdentifierAndProvider(memberDetails.getName(), memberDetails.getRegistrationId())
-                .orElseGet(() -> {
-                    final Member member = findProfileWithAccessToken(accessToken)
-                            .orElseGet(this::createMember);
+        final ProviderUser providerUser = principalUser.getProviderUser();
 
-                    return createOAuth(member, memberDetails.getName(), memberDetails.getRegistrationId());
-                });
+        final Member member = memberRepository.findByNickname(providerUser.getNickname()).orElseThrow(
+                () -> new IllegalArgumentException("해당하는 멤버가 없습니다.")
+        );
 
-        final long profileUuid = oAuth.getMember().getMemberId();
+        final long memberId = member.getId();
 
         CookieUtility.addCookie(
                 response,
                 AccessTokenProperties.COOKIE_NAME,
-                accessTokenProvider.generate(Map.of(AccessTokenProperties.AccessTokenClaim.PROFILE_UUID.getClaim(), profileUuid))
+                accessTokenProvider.createAccessToken(memberId)
         );
 
         CookieUtility.addCookie(
                 response,
                 RefreshTokenProperties.COOKIE_NAME,
-                refreshTokenProvider.generate(Map.of(RefreshTokenProperties.RefreshTokenClaim.PROFILE_UUID.getClaim(), profileUuid)),
-                refreshTokenProvider.getValidSeconds()
+                refreshTokenProvider.createRefreshToken()
         );
 
-        final String provider = Character.toUpperCase(member.getRegistrationId().charAt(0)) + member.getRegistrationId().substring(1);
+        final String provider = Character.toUpperCase(member.getLoginType().charAt(0)) + member.getLoginType().substring(1);
 
-        log.info("{} OAuth 2.0 authentication request: {}", provider, profileUuid);
+        log.info("{} OAuth 2.0 authentication request: {}", provider, memberId);
 
         getRedirectStrategy().sendRedirect(request, response, REDIRECT_URL);
     }
 
-    private OAuth createOAuth(final Member member, final String identifier, final String provider) {
-        try {
-            final OAuth oAuth = OAuth.builder()
-                    .member(member)
-                    .identifier(identifier)
-                    .provider(provider)
-                    .build();
-
-            return oAuthRepository.save(oAuth);
-        } catch (final DataIntegrityViolationException ex) {
-            throw new IllegalArgumentException(ex.getMessage());
-        }
-    }
-
-    private Optional<Member> findProfileWithAccessToken(final String accessToken) {
-        if (accessToken == null) {
-            return Optional.empty();
-        }
-
-        try {
-            final DecodedJWT decodedAccessToken = accessTokenProvider.verify(accessToken);
-
-            final String profileUuid = decodedAccessToken.getClaim(AccessTokenProperties.AccessTokenClaim.PROFILE_UUID.getClaim()).asString();
-
-            return profileRepository.findByUuid(profileUuid);
-        } catch (final JWTVerificationException ex) {
-            throw new BadCredentialsException(ex.getMessage());
-        }
-    }
-
-    private Member createMember() {
-        String nickname = StringUtility.generateRandomString(Member.NICKNAME_MAX_LENGTH);
-
-        while (memberRepository.findByNickname(nickname).isPresent()) {
-            nickname = StringUtility.generateRandomString(Member.NICKNAME_MAX_LENGTH);
-        }
-
+    private Member createMember(final ProviderUser providerUser) {
         final Member member = Member.builder()
-                .nickname(nickname)
+                .loginType(providerUser.getLoginType())
                 .build();
 
         return memberRepository.save(member);
