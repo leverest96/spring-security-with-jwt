@@ -30,7 +30,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import spring.security.boot2.common.util.JwtProvider;
 import spring.security.boot2.handler.AccessDeniedExceptionHandler;
 import spring.security.boot2.handler.AuthenticationExceptionHandler;
-import spring.security.boot2.handler.OAuth2AuthenticationSuccessHandler;
+import spring.security.boot2.security.oauth2.handler.OAuth2AuthenticationSuccessHandler;
 import spring.security.boot2.properties.AccessTokenProperties;
 import spring.security.boot2.properties.RefreshTokenProperties;
 import spring.security.boot2.repository.MemberRepository;
@@ -53,7 +53,6 @@ public class SecurityConfig {
                                                   final CorsConfigurationSource corsConfigurationSource,
                                                   final AuthenticationFilter authenticationFilter,
                                                   final OAuth2UserService<OAuth2UserRequest, OAuth2User> customOAuth2UserService,
-                                                  final OAuth2UserService<OidcUserRequest, OidcUser> customOidcUserService,
                                                   final AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler,
                                                   final AuthenticationFailureHandler authenticationFailureHandler,
                                                   final AuthenticationEntryPoint authenticationEntryPoint,
@@ -84,7 +83,6 @@ public class SecurityConfig {
         http.oauth2Login(oauth2 -> oauth2.userInfoEndpoint(
                 userInfoEndpointConfig -> userInfoEndpointConfig
                         .userService(customOAuth2UserService)
-                        .oidcUserService(customOidcUserService)
                         .and()
                         .successHandler(oAuth2AuthenticationSuccessHandler)
                         .failureHandler(authenticationFailureHandler))

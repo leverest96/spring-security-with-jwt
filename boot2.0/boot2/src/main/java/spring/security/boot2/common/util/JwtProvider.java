@@ -2,21 +2,16 @@ package spring.security.boot2.common.util;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import spring.security.boot2.properties.JwtProperties;
 
 import javax.crypto.SecretKey;
-import javax.servlet.http.HttpServletRequest;
 import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-@Slf4j
-@Component
 public class JwtProvider {
     private static final Long ACCESS_TOKEN_VALIDATE_TIME = 1000L * 60 * 30;
     private static final Long REFRESH_TOKEN_VALIDATE_TIME = 1000L * 60 * 60 * 24 * 365;
@@ -69,13 +64,6 @@ public class JwtProvider {
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("empty jwt");
         }
-    }
-
-    public boolean isExpired(String token) {
-        Claims claim = Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload();
-
-        Date expiration = claim.getExpiration();
-        return expiration.before(new Date());
     }
 
     public Long getClaimFromToken(String token, String name) {

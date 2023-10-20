@@ -1,5 +1,6 @@
 package spring.security.boot2.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -7,12 +8,19 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import spring.security.boot2.security.oauth2.converter.ProviderUserConverter;
 import spring.security.boot2.security.oauth2.converter.ProviderUserRequest;
 import spring.security.boot2.models.users.PrincipalUser;
 import spring.security.boot2.models.users.ProviderUser;
 
 @Service
-public class CustomOAuth2UserService extends AbstractOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
+public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
+    @Autowired
+    private MemberService memberService;
+
+    @Autowired
+    private ProviderUserConverter<ProviderUserRequest, ProviderUser> providerUserConverter;
+
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         ClientRegistration clientRegistration = userRequest.getClientRegistration();
@@ -22,8 +30,18 @@ public class CustomOAuth2UserService extends AbstractOAuth2UserService implement
         ProviderUserRequest providerUserRequest = new ProviderUserRequest(clientRegistration, oAuth2User);
         ProviderUser providerUser = providerUser(providerUserRequest);
 
-        super.register(providerUser);
+        register(providerUser);
 
         return new PrincipalUser(providerUser);
+    }
+
+    public void register(ProviderUser providerUser) {
+        if (memberService.checkExistence(providerUser.getNickname())) {
+            memberService.register(providerUser);
+        }
+    }
+
+    public ProviderUser providerUser(ProviderUserRequest providerUserRequest){
+        return providerUserConverter.convert(providerUserRequest);
     }
 }

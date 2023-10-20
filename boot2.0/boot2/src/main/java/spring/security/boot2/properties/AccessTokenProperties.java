@@ -17,7 +17,7 @@ public class AccessTokenProperties extends JwtProperties {
     @RequiredArgsConstructor
     @Getter
     public enum AccessTokenClaim {
-        MEMBER_ID("id");
+        MEMBER_ID("member_id");
 
         private final String claim;
     }
