@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8"/>
+
+    <title>Index Page</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js"
+            integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"
+            integrity="sha512-3j3VU6WC5rPQB4Ld1jnLV7Kd5xr+cq9avvhwqzbH/taCRNURoeEpoPBK9pDyeukwSxwRPJ8fDgvYXd6SkaZ2TA=="
+            crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+
+    <script src="./index.js" defer></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"/>
+</head>
+<body>
+<div class="container is-max-desktop">
+    <section class="section">
+        <div class="box is-flex is-flex-direction-column py-6 has-background-light is-shadowless">
+            <div class="block is-flex is-align-content-center is-justify-content-center">
+                <h1 class="title">인덱스 페이지</h1>
+            </div>
+
+            <div class="block is-flex is-align-content-center is-justify-content-center mt-5 mb-3">
+                <h4 class="subtitle is-4">회원 기능</h4>
+            </div>
+
+            <div class="block is-flex is-align-content-center is-justify-content-center">
+                <div class="buttons are-medium">
+                    <a href="./register.html" class="button has-text-white has-background-grey">회원가입</a>
+                    <a href="./login.html" class="button has-text-white has-background-grey">로그인</a>
+                    <button class="button has-text-white has-background-grey" onclick="logout()">로그아웃</button>
+                </div>
+            </div>
+
+            <div class="block is-flex is-align-content-center is-justify-content-center mt-5 mb-3">
+                <h4 class="subtitle is-4">페이지 기능</h4>
+            </div>
+
+            <div class="block is-flex is-align-content-center is-justify-content-center">
+                <div class="buttons are-medium">
+                    <a href="./member.html" class="button has-text-white has-background-grey-dark">사용자 페이지</a>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+</body>
+</html>
