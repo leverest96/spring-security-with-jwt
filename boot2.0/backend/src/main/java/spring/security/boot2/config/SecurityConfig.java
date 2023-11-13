@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -33,18 +34,23 @@ import spring.security.boot2.handler.AccessDeniedExceptionHandler;
 import spring.security.boot2.handler.AuthenticationExceptionHandler;
 import spring.security.boot2.properties.AccessTokenProperties;
 import spring.security.boot2.properties.RefreshTokenProperties;
+import spring.security.boot2.properties.SecurityCorsProperties;
 import spring.security.boot2.repository.MemberRepository;
 import spring.security.boot2.security.oauth2.handler.OAuth2AuthenticationSuccessHandler;
 import spring.security.boot2.security.oauth2.oauth2user.OAuth2MemberService;
 import spring.security.boot2.security.web.authentication.CustomAuthenticationConverter;
+import spring.security.boot2.security.web.authentication.CustomAuthenticationFilter;
 import spring.security.boot2.security.web.authentication.CustomAuthenticationProvider;
 import spring.security.boot2.security.web.userdetails.MemberDetailsService;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
     @Bean
-    SecurityFilterChain oauth2SecurityFilterChain(final HttpSecurity http,
+    public SecurityFilterChain securityFilterChain(final HttpSecurity http,
                                                   final CorsConfigurationSource corsConfigurationSource,
                                                   final AuthenticationFilter authenticationFilter,
                                                   final OAuth2UserService<OAuth2UserRequest, OAuth2User> customOAuth2UserService,
@@ -52,8 +58,9 @@ public class SecurityConfig {
                                                   final AuthenticationFailureHandler authenticationFailureHandler,
                                                   final AuthenticationEntryPoint authenticationEntryPoint,
                                                   final AccessDeniedHandler accessDeniedHandler) throws Exception {
-        http.authorizeRequests((requests) -> requests
-                .anyRequest().permitAll());
+        http.authorizeRequests()
+                .antMatchers(HttpMethod.GET, "/", "/profile/**", "/til/**").permitAll()
+                .anyRequest().authenticated();
 
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
@@ -98,14 +105,14 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSource(final SecurityCorsProperties properties) {
         final CorsConfiguration corsConfiguration = new CorsConfiguration();
 
-        corsConfiguration.addAllowedHeader("*");
-        corsConfiguration.addAllowedMethod("*");
-        corsConfiguration.addAllowedOriginPattern("*");
-        corsConfiguration.addAllowedOrigin("*");
-        corsConfiguration.setAllowCredentials(true);
+        corsConfiguration.setAllowCredentials(properties.isAllowCredentials());
+        corsConfiguration.setAllowedHeaders(properties.getAllowedHeaders());
+        corsConfiguration.setAllowedMethods(properties.getAllowedMethods());
+        corsConfiguration.setAllowedOrigins(properties.getAllowedOrigins());
+        corsConfiguration.setMaxAge(corsConfiguration.getMaxAge());
 
         final UrlBasedCorsConfigurationSource corsConfigurationSource = new UrlBasedCorsConfigurationSource();
 
@@ -119,7 +126,7 @@ public class SecurityConfig {
                                                      final AuthenticationConverter authenticationConverter,
                                                      final AuthenticationSuccessHandler authenticationSuccessHandler,
                                                      final AuthenticationFailureHandler authenticationFailureHandler) {
-        final AuthenticationFilter authenticationFilter = new AuthenticationFilter(authenticationManager, authenticationConverter);
+        final AuthenticationFilter authenticationFilter = new CustomAuthenticationFilter(authenticationManager, authenticationConverter);
 
         authenticationFilter.setSuccessHandler(authenticationSuccessHandler);
         authenticationFilter.setFailureHandler(authenticationFailureHandler);

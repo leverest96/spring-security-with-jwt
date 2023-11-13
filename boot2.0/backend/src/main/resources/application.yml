@@ -1,4 +1,3 @@
-
 redis:
   host: localhost
   port: 7809
@@ -12,7 +11,33 @@ jwt:
     valid-seconds: 604800
 
 spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:boot2;MODE=MYSQL
+    username: sa
+
+  jpa:
+    show-sql: true
+
+    hibernate:
+      ddl-auto: update
+
+    properties:
+      hibernate:
+        format_sql: true
+
+  h2:
+    console:
+      enabled: true
+
   security:
+    cors:
+      allow-credentials: false
+      allowed-headers: '*'
+      allowed-methods: GET, POST, PUT, PATCH, DELETE, HEAD
+      allowed-origins: ${SECURITY_CORS_ALLOWED_ORIGINS:http://127.0.0.1:5500}
+      max-age: 1800
+
     oauth2:
       client:
         registration:
@@ -50,25 +75,3 @@ spring:
             token-uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id # OpenID Connect 로 인가서버와 통신하지 않을 경우
-
-  datasource:
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:tiary;MODE=MYSQL
-    username: sa
-
-  jpa:
-    show-sql: true
-
-    hibernate:
-      ddl-auto: update
-
-    properties:
-      hibernate:
-        format_sql: true
-
-  h2:
-    console:
-      enabled: true
-
-  mvc:
-    static-path-pattern: /static/**

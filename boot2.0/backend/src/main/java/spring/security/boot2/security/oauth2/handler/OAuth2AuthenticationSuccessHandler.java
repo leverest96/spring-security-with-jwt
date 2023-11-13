@@ -8,7 +8,6 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.WebUtils;
 import spring.security.boot2.common.util.CookieUtility;
-import spring.security.boot2.common.util.StringUtility;
 import spring.security.boot2.models.users.Member;
 import spring.security.boot2.models.users.PrincipalUser;
 import spring.security.boot2.models.users.ProviderUser;
