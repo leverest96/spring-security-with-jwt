@@ -18,7 +18,7 @@ public interface ProviderUser {
     LoginType getLoginType();
     MemberRole getRole();
     GenderType getGenderType();
-    LocalDateTime getDeleteAt();
+    LocalDateTime getDeletedAt();
     List<? extends GrantedAuthority> getAuthorities();
     Map<String, Object> getAttributes();
     OAuth2User getOAuth2User();

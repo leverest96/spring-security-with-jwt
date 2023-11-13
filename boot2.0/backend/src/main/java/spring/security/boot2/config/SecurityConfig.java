@@ -3,7 +3,9 @@ package spring.security.boot2.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -13,10 +15,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
-import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
@@ -26,28 +26,23 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.CorsUtils;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import spring.security.boot2.common.util.JwtProvider;
 import spring.security.boot2.handler.AccessDeniedExceptionHandler;
 import spring.security.boot2.handler.AuthenticationExceptionHandler;
-import spring.security.boot2.security.oauth2.handler.OAuth2AuthenticationSuccessHandler;
 import spring.security.boot2.properties.AccessTokenProperties;
 import spring.security.boot2.properties.RefreshTokenProperties;
 import spring.security.boot2.repository.MemberRepository;
+import spring.security.boot2.security.oauth2.handler.OAuth2AuthenticationSuccessHandler;
 import spring.security.boot2.security.oauth2.oauth2user.OAuth2MemberService;
 import spring.security.boot2.security.web.authentication.CustomAuthenticationConverter;
 import spring.security.boot2.security.web.authentication.CustomAuthenticationProvider;
 import spring.security.boot2.security.web.userdetails.MemberDetailsService;
 
-
+@Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring().antMatchers("/static/js/**", "/static/images/**", "/static/css/**","/static/scss/**");
-    }
-
     @Bean
     SecurityFilterChain oauth2SecurityFilterChain(final HttpSecurity http,
                                                   final CorsConfigurationSource corsConfigurationSource,
@@ -58,13 +53,7 @@ public class SecurityConfig {
                                                   final AuthenticationEntryPoint authenticationEntryPoint,
                                                   final AccessDeniedHandler accessDeniedHandler) throws Exception {
         http.authorizeRequests((requests) -> requests
-                .antMatchers("/api/user")
-                .access("hasAnyRole('SCOPE_profile','SCOPE_profile_image', 'SCOPE_email')")
-                .antMatchers("/api/oidc")
-                .access("hasRole('SCOPE_openid')")
-                .antMatchers("/")
-                .permitAll()
-                .anyRequest().authenticated());
+                .anyRequest().permitAll());
 
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
@@ -80,19 +69,32 @@ public class SecurityConfig {
 
         http.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-        http.oauth2Login(oauth2 -> oauth2.userInfoEndpoint(
-                userInfoEndpointConfig -> userInfoEndpointConfig
-                        .userService(customOAuth2UserService)
-                        .and()
-                        .successHandler(oAuth2AuthenticationSuccessHandler)
-                        .failureHandler(authenticationFailureHandler))
-                        .permitAll());
+        http.oauth2Login()
+                .authorizationEndpoint()
+                .baseUri("/oauth2/authorization")
+                .and()
+                .redirectionEndpoint()
+                .baseUri("/login/oauth2/code/*")
+                .and()
+                .userInfoEndpoint()
+                .userService(customOAuth2UserService)
+                .and()
+                .successHandler(oAuth2AuthenticationSuccessHandler)
+                .failureHandler(authenticationFailureHandler);
 
         http.exceptionHandling()
                 .authenticationEntryPoint(authenticationEntryPoint)
                 .accessDeniedHandler(accessDeniedHandler);
 
         return http.build();
+    }
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return web -> web.ignoring()
+                .requestMatchers(CorsUtils::isPreFlightRequest)
+                .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
+                .requestMatchers(PathRequest.toH2Console());
     }
 
     @Bean

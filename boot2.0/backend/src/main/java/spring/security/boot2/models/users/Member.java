@@ -20,8 +20,6 @@ import java.util.Map;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member {
     public static final int NICKNAME_MAX_LENGTH = 20;
-    public static final String ROLE_USER = "USER";
-    public static final String GENDER_MALE = "MALE";
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "member_id")
@@ -36,6 +34,9 @@ public class Member {
     @Column(nullable = false)
     private String email;
 
+    @Column(nullable = true)
+    private String password;
+
     @Column(nullable = false)
     private String profile;
 
@@ -43,7 +44,7 @@ public class Member {
     @Enumerated(EnumType.STRING)
     private MemberRole role;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     @Enumerated(EnumType.STRING)
     private LoginType loginType;
 
@@ -57,6 +58,7 @@ public class Member {
     public Member(String loginId,
                   String nickname,
                   String email,
+                  String password,
                   String profile,
                   MemberRole role,
                   LoginType loginType,
@@ -64,6 +66,7 @@ public class Member {
         this.loginId = loginId;
         this.nickname = nickname;
         this.email = email;
+        this.password = password;
         this.profile = profile;
         this.role = role;
         this.loginType = loginType;

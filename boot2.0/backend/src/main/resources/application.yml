@@ -51,8 +51,24 @@ spring:
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id # OpenID Connect 로 인가서버와 통신하지 않을 경우
 
-            # OpenID Connect 일 경우 nameAttributeKey 가 sub 이기 때문에 별도의 커스트 마이징이 필요
-            # CustomOidcUserService 참조
-            # user-name-attribute: sub
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:tiary;MODE=MYSQL
+    username: sa
+
+  jpa:
+    show-sql: true
+
+    hibernate:
+      ddl-auto: update
+
+    properties:
+      hibernate:
+        format_sql: true
+
+  h2:
+    console:
+      enabled: true
+
   mvc:
     static-path-pattern: /static/**

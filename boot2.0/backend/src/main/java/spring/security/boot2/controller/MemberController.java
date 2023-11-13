@@ -1,6 +1,7 @@
 package spring.security.boot2.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,21 +22,14 @@ public class MemberController {
     @PostMapping("/register")
     public ResponseEntity<Void> register(@RequestBody MemberRegisterDto requestDto) {
         memberService.register(requestDto);
+
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("login")
     public ResponseEntity<Member> login(@RequestBody MemberLoginDto requestDto) {
-        return memberService.login(requestDto);
-    }
+        Member member = memberService.login(requestDto);
 
-    @PostMapping("/kakao")
-    public ResponseEntity<LoginResponseDto> kakaoLogin(@RequestBody SocialLoginRequestDto requestDto) throws IOException {
-        return socialLoginService.kakaoLogin(requestDto);
+        return ResponseEntity.ok().body(member);
     }
-
-    @PostMapping("/google")
-    public ResponseEntity<LoginResponseDto> googleLogin(@RequestBody SocialLoginRequestDto requestDto) throws IOException {
-        return socialLoginService.googleLogin(requestDto);
-    }
-
 }

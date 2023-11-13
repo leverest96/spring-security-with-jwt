@@ -6,6 +6,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import spring.security.boot2.common.enums.GenderType;
+import spring.security.boot2.common.enums.LoginType;
+import spring.security.boot2.common.enums.MemberRole;
 import spring.security.boot2.models.users.Member;
 import spring.security.boot2.models.users.ProviderUser;
 
@@ -28,22 +31,24 @@ public abstract class OAuth2ProviderUser implements ProviderUser {
     }
 
     @Override
-    public String getLoginType() {
-        return clientRegistration.getRegistrationId();
+    public LoginType getLoginType() {
+        return clientRegistration.getRegistrationId().equals("kakao") ?
+                LoginType.KAKAO : clientRegistration.getRegistrationId().equals("google") ?
+                LoginType.GOOGLE : LoginType.NAVER;
     }
 
     @Override
-    public String getRole() {
-        return Member.ROLE_USER;
+    public MemberRole getRole() {
+        return MemberRole.MEMBER;
     }
 
     @Override
-    public String getGenderType() {
-        return Member.GENDER_MALE;
+    public GenderType getGenderType() {
+        return null;
     }
 
     @Override
-    public LocalDateTime getDeleteAt() {
+    public LocalDateTime getDeletedAt() {
         return null;
     }
 

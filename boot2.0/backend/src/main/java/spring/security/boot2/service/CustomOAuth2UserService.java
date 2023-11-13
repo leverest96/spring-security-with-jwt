@@ -37,7 +37,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
     public void register(ProviderUser providerUser) {
         if (memberService.checkExistence(providerUser.getNickname())) {
-            memberService.register(providerUser);
+            memberService.socialRegister(providerUser);
         }
     }
 
