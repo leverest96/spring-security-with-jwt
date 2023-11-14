@@ -12,7 +12,7 @@ public final class CookieUtility {
         final Cookie cookie = new Cookie(name, value);
 
         cookie.setHttpOnly(true);
-        cookie.setSecure(true);
+        cookie.setSecure(false);
         cookie.setPath("/");
 
         return cookie;

@@ -1,0 +1,7 @@
+security:
+  cors:
+    allow-credentials: true
+    allowed-headers: '*'
+    allowed-methods: GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS
+    allowed-origins: ${SECURITY_CORS_ALLOWED_ORIGINS:http://localhost:5173}
+    max-age: 1800

@@ -28,15 +28,16 @@ function register() {
     contentType: "application/json",
     data: JSON.stringify({
       email: email,
-      password: password,
       nickname: nickname,
+      password: password,
     }),
   })
     .done(function (data) {
       alert(`${data.nickname}님 회원가입을 환영합니다.`);
       window.location.replace("/");
     })
-    .fail(function () {
-      alert("회원가입을 실패했습니다.");
+    .fail((error) => {
+      console.log(error);
+      alert("회원가입을 실패했습니다. + ");
     });
 }

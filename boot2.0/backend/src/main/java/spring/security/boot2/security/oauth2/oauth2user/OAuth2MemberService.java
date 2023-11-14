@@ -1,5 +1,6 @@
 package spring.security.boot2.security.oauth2.oauth2user;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -15,13 +16,14 @@ import spring.security.boot2.security.oauth2.converter.ProviderUserRequest;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class OAuth2MemberService extends DefaultOAuth2UserService {
-    @Autowired
-    private ProviderUserConverter<ProviderUserRequest, ProviderUser> providerUserConverter;
+    private final ProviderUserConverter<ProviderUserRequest, ProviderUser> providerUserConverter;
 
     @Override
     public OAuth2User loadUser(final OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         ClientRegistration clientRegistration = userRequest.getClientRegistration();
+
         OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService = new DefaultOAuth2UserService();
         OAuth2User oAuth2User = oAuth2UserService.loadUser(userRequest);
 
