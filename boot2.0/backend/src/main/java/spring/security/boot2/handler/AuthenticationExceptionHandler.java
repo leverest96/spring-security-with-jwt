@@ -21,6 +21,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+// 인증 실패시 처리하는 클래스
+// 원래는 이곳에서 access token의 재발급을 하면 안되지만 다른 클래스를 만들지 않고 처리가 가능하여 임시로 이곳에서 진행
+// 추후 다른 interceptor 혹은 filter를 이용하여 처리 예정
 @RequiredArgsConstructor
 @Slf4j
 public class AuthenticationExceptionHandler implements AuthenticationEntryPoint {
@@ -37,10 +40,12 @@ public class AuthenticationExceptionHandler implements AuthenticationEntryPoint 
         final String accessToken = (accessTokenCookie == null) ? (null) : (accessTokenCookie.getValue());
 
         try {
-             if (checkAccessTokenExpiration(accessToken)) {
+            // access token 재발급 로직
+            if (checkAccessTokenExpiration(accessToken)) {
                 final Cookie refreshTokenCookie = WebUtils.getCookie(request, RefreshTokenProperties.COOKIE_NAME);
                 final String refreshToken = (refreshTokenCookie == null) ? (null) : (refreshTokenCookie.getValue());
 
+                // refresh token 재발급 로직
                 if (verifyRefreshToken(refreshToken)) {
                     final long memberId = accessTokenProvider.getLongClaimFromToken(accessToken, AccessTokenProperties.AccessTokenClaim.MEMBER_ID.getClaim());
                     final String loginId = accessTokenProvider.getStringClaimFromToken(accessToken, AccessTokenProperties.AccessTokenClaim.LOGIN_ID.getClaim());
@@ -52,6 +57,7 @@ public class AuthenticationExceptionHandler implements AuthenticationEntryPoint 
                 }
             }
         } catch (final Exception ex) {
+            // 인증 처리 실패시 로직
             final String[] uriTokens = request.getRequestURI().substring(1).split("/");
 
             log.warn("Authentication exception occurrence: {}", authException.getMessage());
@@ -69,13 +75,14 @@ public class AuthenticationExceptionHandler implements AuthenticationEntryPoint 
                 response.setCharacterEncoding(StandardCharsets.UTF_8.name());
                 response.getWriter().write(responseBody);
             } else if (accessToken == null) {
-                response.sendRedirect("http://localhost:5174/");
+                response.sendRedirect("http://localhost:5173/");
             } else {
                 response.sendRedirect(request.getRequestURI());
             }
         }
     }
 
+    // access token 만료 여부 확인
     private boolean checkAccessTokenExpiration(final String accessToken) {
         if (accessToken == null) {
             throw new IllegalArgumentException();
@@ -88,6 +95,7 @@ public class AuthenticationExceptionHandler implements AuthenticationEntryPoint 
         }
     }
 
+    // refresh token 만료 여부 확인
     private boolean verifyRefreshToken(final String refreshToken) {
         if (refreshToken == null) {
             throw new IllegalArgumentException();

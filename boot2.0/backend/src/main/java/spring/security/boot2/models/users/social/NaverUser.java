@@ -4,9 +4,8 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import spring.security.boot2.models.Attributes;
 
-import java.time.LocalDateTime;
-import java.util.Map;
-
+// naver 로그인에 대한 처리
+// naver 로그인은 개인적으로 하지 못하므로 일단 사용 X
 public class NaverUser extends OAuth2ProviderUser {
     public NaverUser(Attributes attributes, OAuth2User oAuth2User, ClientRegistration clientRegistration){
         super(attributes.getSubAttributes(), oAuth2User, clientRegistration);

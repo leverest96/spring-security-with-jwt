@@ -5,6 +5,7 @@ import spring.security.boot2.models.Attributes;
 
 import java.util.Map;
 
+// oauth2를 사용하기 위한 utility 클래스
 public class OAuth2Utils {
     public static Attributes getMainAttributes(OAuth2User oAuth2User) {
         return Attributes.builder()

@@ -4,8 +4,8 @@ import lombok.Builder;
 import lombok.Getter;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import spring.security.boot2.models.users.Member;
 
+// oauth2 로그인의 종류 확인 및 기본 OAuth2User 초기화
 @Getter
 public class ProviderUserRequest {
     private final ClientRegistration clientRegistration;

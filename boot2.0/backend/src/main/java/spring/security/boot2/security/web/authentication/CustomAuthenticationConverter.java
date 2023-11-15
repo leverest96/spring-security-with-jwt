@@ -12,6 +12,9 @@ import spring.security.boot2.properties.AccessTokenProperties;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
+// oauth2의 DelegatingProviderUserConverter의 내부 고려사항들 중 하나와 비슷
+// 일반 로그인에서의 converter
+// token을 authentication 객체로 반환 (여기서 PreAuthenticatedAuthenticationToken도 Authentication을 구현한 객체)
 @RequiredArgsConstructor
 public class CustomAuthenticationConverter implements AuthenticationConverter {
     private final AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource;

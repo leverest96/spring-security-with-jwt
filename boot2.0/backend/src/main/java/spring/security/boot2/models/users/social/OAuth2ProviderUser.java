@@ -9,15 +9,14 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import spring.security.boot2.common.enums.GenderType;
 import spring.security.boot2.common.enums.LoginType;
 import spring.security.boot2.common.enums.MemberRole;
-import spring.security.boot2.models.users.Member;
 import spring.security.boot2.models.users.ProviderUser;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
+// 로그인 종류별 부모 클래스 즉, 공통 클래스
 @Getter
 @RequiredArgsConstructor
 public abstract class OAuth2ProviderUser implements ProviderUser {

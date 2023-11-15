@@ -8,13 +8,13 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.WebUtils;
 import spring.security.boot2.common.util.CookieUtility;
+import spring.security.boot2.common.util.JwtProvider;
 import spring.security.boot2.models.users.Member;
-import spring.security.boot2.models.users.PrincipalUser;
 import spring.security.boot2.models.users.ProviderUser;
 import spring.security.boot2.properties.AccessTokenProperties;
 import spring.security.boot2.properties.RefreshTokenProperties;
 import spring.security.boot2.repository.MemberRepository;
-import spring.security.boot2.common.util.JwtProvider;
+import spring.security.boot2.security.oauth2.oauth2user.CustomOAuth2User;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -22,11 +22,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 
+// oauth2 로그인 성공시 cookie에 값을 전달하기 위한 클래스
+// 필요시 회원가입도 동시에 진행
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Slf4j
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
-    public static final String REDIRECT_URL = "http://localhost:5174/";
+    public static final String REDIRECT_URL = "http://localhost:5173/";
 
     private final MemberRepository memberRepository;
 
@@ -41,10 +43,11 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         final Cookie accessTokenCookie = WebUtils.getCookie(request, AccessTokenProperties.COOKIE_NAME);
         final String accessToken = (accessTokenCookie == null) ? (null) : (accessTokenCookie.getValue());
 
-        final PrincipalUser principalUser = (PrincipalUser) authentication.getPrincipal();
+        final CustomOAuth2User principalUser = (CustomOAuth2User) authentication.getPrincipal();
 
         final ProviderUser providerUser = principalUser.getProviderUser();
 
+        // access token의 정보를 통해 member를 찾고 없다면 생성
         final Member member = findMemberWithAccessToken(accessToken, providerUser.getLoginId()).orElseGet(
                 () -> createMember(providerUser)
         );
@@ -67,6 +70,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             return Optional.empty();
         }
 
+        // access token과 현재 oauth2 로그인을 진행 중인 loginId를 비교하여 같다면 member 반환
         try {
             final long memberId = accessTokenProvider.getLongClaimFromToken(accessToken, AccessTokenProperties.AccessTokenClaim.MEMBER_ID.getClaim());
             final String loginId = accessTokenProvider.getStringClaimFromToken(accessToken, AccessTokenProperties.AccessTokenClaim.LOGIN_ID.getClaim());

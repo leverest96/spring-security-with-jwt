@@ -33,12 +33,14 @@ import spring.security.boot2.properties.AccessTokenProperties;
 import spring.security.boot2.properties.RefreshTokenProperties;
 import spring.security.boot2.repository.MemberRepository;
 import spring.security.boot2.security.oauth2.handler.OAuth2AuthenticationSuccessHandler;
+import spring.security.boot2.security.oauth2.oauth2user.CustomOAuth2UserService;
 import spring.security.boot2.security.web.authentication.CustomAuthenticationConverter;
 import spring.security.boot2.security.web.authentication.CustomAuthenticationFilter;
 import spring.security.boot2.security.web.authentication.CustomAuthenticationProvider;
 import spring.security.boot2.security.web.userdetails.MemberDetailsService;
-import spring.security.boot2.security.oauth2.oauth2user.CustomOAuth2UserService;
 
+// security 구성의 가장 중요한 부분
+// 대부분의 주입 관계나 security 설정을 담당
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -51,26 +53,41 @@ public class SecurityConfig {
                                                   final AuthenticationFailureHandler authenticationFailureHandler,
                                                   final AuthenticationEntryPoint authenticationEntryPoint,
                                                   final AccessDeniedHandler accessDeniedHandler) throws Exception {
+        // 요청에 대한 권한 설정
         http.authorizeRequests()
                 .antMatchers(HttpMethod.GET, "/").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/member/register", "/api/member/login").permitAll()
                 .anyRequest().authenticated();
 
+        // JWT가 stateless한 상태를 유지하도록 spring security에서 session을 사용하지 않게 설정
+        // stateless : 서버가 클라이언트의 상태를 보존하지 않음
+        // 서버의 확장성 때문 (서버가 장애가 나더라도 그 서버와 연결된 클라이언트가 기존 작업을 처음부터 작업하지 않아도 됨)
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
-//        http.cors().configurationSource(corsConfigurationSource);
+        // 기존에 여기서 cors 에러를 해결하려 했으나 실패하여 WebConfig 클래스에서 해결
+        //http.cors().configurationSource(corsConfigurationSource);
 
-//        http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
-        http.csrf().disable();
+        // frontend 단에서 header에 X-XSRF-TOKEN을 넘겨줘야함
+        //http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
 
-        http.httpBasic().disable()
+        // csrf : 상단 기입에 따라서 disable()로 임시 해결 / 추후 필요시 다시 할당 예정
+        // httpBasic : Http Basic Auth 기반 로그인 이용 X
+        // formLogin : 기본 로그인 페이지를 이용 X
+        // logout : 기본 로그아웃 요청 사용 X
+        // rememberMe : JWT 사용
+        // headers : http header 사용 X (필요시 header 직접 custom)
+        http.csrf().disable()
+                .httpBasic().disable()
                 .formLogin().disable()
                 .logout().disable()
                 .rememberMe().disable()
                 .headers().disable();
 
+        // 일반 로그인시 사용될 filter 설정
         http.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
+        // oauth2 로그인을 위한 설정
+        // 이후 모든 redirect uri를 /login/oauth2/code/로 설정
         http.oauth2Login()
                 .authorizationEndpoint()
                 .baseUri("/oauth2/authorization")
@@ -84,6 +101,7 @@ public class SecurityConfig {
                 .successHandler(oAuth2AuthenticationSuccessHandler)
                 .failureHandler(authenticationFailureHandler);
 
+        // 예외 처리를 위한 설정
         http.exceptionHandling()
                 .authenticationEntryPoint(authenticationEntryPoint)
                 .accessDeniedHandler(accessDeniedHandler);
@@ -91,6 +109,7 @@ public class SecurityConfig {
         return http.build();
     }
 
+    // 정적 폴더 및 H2 사용을 위한 spring security 적용 범위에서 제외
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return web -> web.ignoring()
@@ -99,24 +118,26 @@ public class SecurityConfig {
                 .requestMatchers(PathRequest.toH2Console());
     }
 
-//    @Bean
-//    public CorsConfigurationSource corsConfigurationSource(final SecurityCorsProperties properties) {
-//        final CorsConfiguration corsConfiguration = new CorsConfiguration();
-//
-//        corsConfiguration.setAllowCredentials(properties.isAllowCredentials());
-//        corsConfiguration.setAllowedOriginPatterns(List.of("*"));
-//        corsConfiguration.setAllowedOrigins(properties.getAllowedOrigins());
-//        corsConfiguration.setAllowedHeaders(properties.getAllowedHeaders());
-//        corsConfiguration.setAllowedMethods(properties.getAllowedMethods());
-//        corsConfiguration.setMaxAge(properties.getMaxAge());
-//
-//        final UrlBasedCorsConfigurationSource corsConfigurationSource = new UrlBasedCorsConfigurationSource();
-//
-//        corsConfigurationSource.registerCorsConfiguration("/**", corsConfiguration);
-//
-//        return corsConfigurationSource;
-//    }
+    // 상단 cors 설정시 사용될 cors 설정
+    //@Bean
+    //public CorsConfigurationSource corsConfigurationSource(final SecurityCorsProperties properties) {
+    //    final CorsConfiguration corsConfiguration = new CorsConfiguration();
+    //
+    //    corsConfiguration.setAllowCredentials(properties.isAllowCredentials());
+    //    corsConfiguration.setAllowedOriginPatterns(List.of("*"));
+    //    corsConfiguration.setAllowedOrigins(properties.getAllowedOrigins());
+    //    corsConfiguration.setAllowedHeaders(properties.getAllowedHeaders());
+    //    corsConfiguration.setAllowedMethods(properties.getAllowedMethods());
+    //    corsConfiguration.setMaxAge(properties.getMaxAge());
+    //
+    //    final UrlBasedCorsConfigurationSource corsConfigurationSource = new UrlBasedCorsConfigurationSource();
+    //
+    //    corsConfigurationSource.registerCorsConfiguration("/**", corsConfiguration);
+    //
+    //    return corsConfigurationSource;
+    //}
 
+    // 이후 spring security에 필요한 주입 관계 설정
     @Bean
     public AuthenticationFilter authenticationFilter(final AuthenticationManager authenticationManager,
                                                      final AuthenticationConverter authenticationConverter,
@@ -164,8 +185,6 @@ public class SecurityConfig {
 
     @Bean
     public OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService() {
-//        ProviderUserConverter<ProviderUserRequest, ProviderUser> providerUserConverter = new DelegatingProviderUserConverter();
-
         return new CustomOAuth2UserService();
     }
 

@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+// 일반 로그인의 filter에서 사용될 converter를 고르듯 oauth2에서 사용될 converter를 결정하는 클래스
 @Component
 public final class DelegatingProviderUserConverter implements ProviderUserConverter<ProviderUserRequest, ProviderUser> {
     private final List<ProviderUserConverter<ProviderUserRequest, ProviderUser>> converters;

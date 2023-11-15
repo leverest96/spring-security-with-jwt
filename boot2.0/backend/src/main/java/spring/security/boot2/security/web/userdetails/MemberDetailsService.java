@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import spring.security.boot2.common.util.JwtProvider;
 
+// provider에서 인증 정보를 반환하기 위한 service
 @RequiredArgsConstructor
 @Slf4j
 public class MemberDetailsService implements AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {

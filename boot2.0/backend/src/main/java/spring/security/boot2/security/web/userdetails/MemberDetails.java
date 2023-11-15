@@ -9,6 +9,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
 
+// 일반 로그인에서 사용되는 클래스로 UserDetails를 상속받는 클래스
+// 이후 access token에서 정보를 불러와 사용할 때에도 MemberDetails에서 불러옴
 @Getter
 @RequiredArgsConstructor
 public class MemberDetails implements UserDetails {

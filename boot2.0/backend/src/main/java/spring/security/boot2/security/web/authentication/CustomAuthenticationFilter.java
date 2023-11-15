@@ -13,6 +13,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+// 실제 요청을 가장 먼저 처리하는 filter 클래스
+// converter를 결정하고 manager를 통해 provider를 거쳐 SecurityContextHolder에 authentication 객체를 저장
 public class CustomAuthenticationFilter extends AuthenticationFilter {
     private final AuthenticationManager authenticationManager;
 

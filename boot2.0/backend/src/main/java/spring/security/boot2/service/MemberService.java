@@ -10,13 +10,8 @@ import spring.security.boot2.dto.MemberLoginDto;
 import spring.security.boot2.dto.MemberLoginResponseDto;
 import spring.security.boot2.dto.MemberRegisterDto;
 import spring.security.boot2.models.users.Member;
-import spring.security.boot2.models.users.ProviderUser;
-import spring.security.boot2.properties.AccessTokenProperties;
-import spring.security.boot2.properties.RefreshTokenProperties;
 import spring.security.boot2.repository.MemberRepository;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -47,22 +42,6 @@ public class MemberService {
         memberRepository.save(member);
     }
 
-    public void socialRegister(ProviderUser providerUser) {
-        Member member = memberRepository.findByEmail(providerUser.getEmail()).orElseGet(
-                () -> memberRepository.save(Member.builder()
-                        .loginId(providerUser.getLoginId())
-                        .nickname(providerUser.getNickname())
-                        .email(providerUser.getEmail())
-                        .profile(providerUser.getProfile())
-                        .loginType(providerUser.getLoginType())
-                        .role(providerUser.getRole())
-                        .genderType(providerUser.getGenderType())
-                        .build())
-        );
-
-        memberRepository.save(member);
-    }
-
     public MemberLoginResponseDto login(MemberLoginDto requestDto) {
         Member member = memberRepository.findByEmail(requestDto.getEmail()).orElseThrow(
                 () -> new IllegalArgumentException("이메일 없음")
@@ -82,6 +61,7 @@ public class MemberService {
         return MemberLoginResponseDto.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
+                .refreshTokenValidSeconds(0)
                 .build();
     }
 

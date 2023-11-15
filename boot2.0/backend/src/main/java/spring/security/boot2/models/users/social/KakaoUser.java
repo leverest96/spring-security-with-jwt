@@ -6,6 +6,7 @@ import spring.security.boot2.models.Attributes;
 
 import java.util.Map;
 
+// kakao 로그인에 대한 처리
 public class KakaoUser extends OAuth2ProviderUser {
     private final Map<String, Object> subAttributes;
 

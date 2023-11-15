@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+// 권한 실패시 처리하는 클래스
 @RequiredArgsConstructor
 @Slf4j
 public class AccessDeniedExceptionHandler implements AccessDeniedHandler {

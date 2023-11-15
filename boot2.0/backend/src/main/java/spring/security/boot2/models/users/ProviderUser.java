@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+// Member entity에서 사용될 필드들을 설정하기 위한 인터페이스
 public interface ProviderUser {
     String getLoginId();
     String getNickname();

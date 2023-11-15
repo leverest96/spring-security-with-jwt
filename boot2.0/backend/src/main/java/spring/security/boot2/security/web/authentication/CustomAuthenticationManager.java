@@ -9,6 +9,7 @@ import org.springframework.security.core.AuthenticationException;
 
 import java.util.List;
 
+// spring security에서 사용될 provider를 결정
 @RequiredArgsConstructor
 @Configuration
 public class CustomAuthenticationManager implements AuthenticationManager {
