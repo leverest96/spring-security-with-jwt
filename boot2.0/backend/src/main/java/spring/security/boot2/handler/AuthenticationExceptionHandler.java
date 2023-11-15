@@ -41,17 +41,17 @@ public class AuthenticationExceptionHandler implements AuthenticationEntryPoint 
 
         try {
             // access token 재발급 로직
-            if (checkAccessTokenExpiration(accessToken)) {
+            if (!checkAccessTokenExpiration(accessToken)) {
                 final Cookie refreshTokenCookie = WebUtils.getCookie(request, RefreshTokenProperties.COOKIE_NAME);
                 final String refreshToken = (refreshTokenCookie == null) ? (null) : (refreshTokenCookie.getValue());
 
                 // refresh token 재발급 로직
                 if (verifyRefreshToken(refreshToken)) {
-                    final long memberId = accessTokenProvider.getLongClaimFromToken(accessToken, AccessTokenProperties.AccessTokenClaim.MEMBER_ID.getClaim());
-                    final String loginId = accessTokenProvider.getStringClaimFromToken(accessToken, AccessTokenProperties.AccessTokenClaim.LOGIN_ID.getClaim());
+                    final long memberId = accessTokenProvider.getLongClaimFromExpirationToken(accessToken, AccessTokenProperties.AccessTokenClaim.MEMBER_ID.getClaim());
+                    final String loginId = accessTokenProvider.getStringClaimFromExpirationToken(accessToken, AccessTokenProperties.AccessTokenClaim.LOGIN_ID.getClaim());
 
                     CookieUtility.addCookie(response, AccessTokenProperties.COOKIE_NAME, accessTokenProvider.createAccessToken(memberId, loginId));
-                    CookieUtility.addCookie(response, RefreshTokenProperties.COOKIE_NAME, refreshTokenProvider.createRefreshToken(memberId));
+                    CookieUtility.addCookie(response, RefreshTokenProperties.COOKIE_NAME, refreshTokenProvider.createRefreshToken(memberId), refreshTokenProvider.getValidSeconds());
 
                     response.sendRedirect(request.getRequestURI());
                 }

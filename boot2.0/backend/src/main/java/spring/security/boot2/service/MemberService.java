@@ -55,13 +55,13 @@ public class MemberService {
         final String loginId = member.getLoginId();
 
         final String accessToken = accessTokenProvider.createAccessToken(memberId, loginId);
-
         final String refreshToken = refreshTokenProvider.createRefreshToken(memberId);
+        final int refreshTokenValidSeconds = refreshTokenProvider.getValidSeconds();
 
         return MemberLoginResponseDto.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
-                .refreshTokenValidSeconds(0)
+                .refreshTokenValidSeconds(refreshTokenValidSeconds)
                 .build();
     }
 

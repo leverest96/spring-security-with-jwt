@@ -35,7 +35,7 @@ public class MemberController {
         MemberLoginResponseDto responseDto = memberService.login(requestDto);
 
         CookieUtility.addCookie(response, AccessTokenProperties.COOKIE_NAME, responseDto.getAccessToken());
-        CookieUtility.addCookie(response, RefreshTokenProperties.COOKIE_NAME, responseDto.getRefreshToken(), 16000);
+        CookieUtility.addCookie(response, RefreshTokenProperties.COOKIE_NAME, responseDto.getRefreshToken(), responseDto.getRefreshTokenValidSeconds());
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

@@ -2,6 +2,7 @@ package spring.security.boot2.common.util;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import lombok.Getter;
 import spring.security.boot2.properties.JwtProperties;
 
 import javax.crypto.SecretKey;
@@ -11,16 +12,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 // JWT 생성용 코드
+@Getter
 public class JwtProvider {
-    private static final Long ACCESS_TOKEN_VALIDATE_TIME = 1000L * 60 * 30;
+    private static final Long ACCESS_TOKEN_VALIDATE_TIME = 1000L * 30;
     private static final Long REFRESH_TOKEN_VALIDATE_TIME = 1000L * 60 * 60 * 24 * 365;
 
     private final SecretKey secretKey;
+
+    private final int validSeconds;
 
     // 생성자 및 초기화
     public JwtProvider(final JwtProperties properties) {
         final String keyBase64Encoded = Base64.getEncoder().encodeToString(properties.getSecretKey().getBytes());
         this.secretKey = Keys.hmacShaKeyFor(keyBase64Encoded.getBytes());
+        this.validSeconds = properties.getValidSeconds();
     }
 
     // AccessToken 생성
@@ -72,7 +77,7 @@ public class JwtProvider {
         } catch (MalformedJwtException e) {
             throw new MalformedJwtException("jwt not valid");
         } catch (ExpiredJwtException e) {
-            throw new ExpiredJwtException(null, null, "expired");
+            return false;
         } catch (UnsupportedJwtException e) {
             throw new UnsupportedJwtException("unsupported jwt");
         } catch (IllegalArgumentException e) {
@@ -94,13 +99,25 @@ public class JwtProvider {
         return (String) claim.get(name);
     }
 
-    public Long getClaimFromExpirationToken(String expirationToken, String name) {
+    // 만료된 Token에서 memberId를 판별하기 위한 메서드
+    public Long getLongClaimFromExpirationToken(String expirationToken, String name) {
         try {
             Claims claim = Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(expirationToken).getPayload();
 
             return Long.parseLong((String) claim.get(name));
         } catch (ExpiredJwtException e) {
             return Long.parseLong((String)e.getClaims().get(name));
+        }
+    }
+
+    // 만료된 Token에서 loginId를 판별하기 위한 메서드
+    public String getStringClaimFromExpirationToken(String expirationToken, String name) {
+        try {
+            Claims claim = Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(expirationToken).getPayload();
+
+            return (String) claim.get(name);
+        } catch (ExpiredJwtException e) {
+            return (String)e.getClaims().get(name);
         }
     }
 }

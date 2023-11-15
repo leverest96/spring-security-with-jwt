@@ -13,7 +13,7 @@ const MemberPage = () => {
         setEmail(email);
         setNickname(nickname);
       } catch (error) {
-        window.location.replace("/")
+        console.log("solved " + error)
       }
     };
 

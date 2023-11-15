@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CookieUtility {
+    // token의 expireDate만 사용할 때 사용
     public static Cookie createCookie(final String name, final String value) {
         final Cookie cookie = new Cookie(name, value);
 
@@ -19,6 +20,7 @@ public final class CookieUtility {
         return cookie;
     }
 
+    // token의 expireDate뿐만 아니라 cookie의 maxAge를 사용할 때 사용
     public static Cookie createCookie(final String name, final String value, final int maxAge) {
         final Cookie cookie = createCookie(name, value);
 
