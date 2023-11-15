@@ -4,8 +4,8 @@ spring:
       client:
         registration:
           google:
-            client-id: 719209830145-mi8pdn51ivofbkvt1oim8r2a3r07bc4l.apps.googleusercontent.com
-            client-secret: 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
+            client-id: ${GOOGLE_CLIENT_ID:apps.googleusercontent.com}
+            client-secret: ${GOOGLE_CLIENT_SECRET:apps.googleusercontent.com}
             scope: profile, email
           naver:
             client-id: PyqTi2mMDkpj2i9Y22z4
@@ -15,8 +15,8 @@ spring:
             redirect-uri: http://localhost:8080/login/oauth2/code/naver
             scope: profile, email
           kakao:
-            client-id: ff9a59afd70763b90afba45d45849afb
-            client-secret: RKc7lhavKEBos5tePIAjZJ4D5kKKxc6g
+            client-id: ${KAKAO_CLIENT_ID:apps.kakaousercontent.com}
+            client-secret: ${KAKAO_CLIENT_SECRET:apps.kakaousercontent.com}
             authorization-grant-type: authorization_code
             client-authentication-method: POST
             client-name: lingotown
