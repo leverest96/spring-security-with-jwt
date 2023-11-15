@@ -28,10 +28,10 @@ public class Member {
     @Column(nullable = false)
     private String loginId;
 
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false)
     private String nickname;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String email;
 
     @Column(nullable = true)

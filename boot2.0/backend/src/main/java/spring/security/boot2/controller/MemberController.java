@@ -15,6 +15,7 @@ import spring.security.boot2.properties.RefreshTokenProperties;
 import spring.security.boot2.security.web.userdetails.MemberDetails;
 import spring.security.boot2.service.MemberService;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 @RestController

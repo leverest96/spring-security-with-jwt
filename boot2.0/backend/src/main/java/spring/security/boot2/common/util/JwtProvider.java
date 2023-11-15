@@ -23,12 +23,13 @@ public class JwtProvider {
         this.secretKey = Keys.hmacShaKeyFor(keyBase64Encoded.getBytes());
     }
 
-    public String createAccessToken(long memberId) {
+    public String createAccessToken(long memberId, String loginId) {
         Date now = new Date();
         Date expireDate = new Date(now.getTime() + ACCESS_TOKEN_VALIDATE_TIME);
 
         Map<String, Object> payloads = new HashMap<>();
         payloads.put("memberId", Long.toString(memberId));
+        payloads.put("loginId", loginId);
 
         return Jwts.builder()
                 .claims(payloads)
@@ -39,11 +40,15 @@ public class JwtProvider {
                 .compact();
     }
 
-    public String createRefreshToken() {
+    public String createRefreshToken(long memberId) {
         Date now = new Date();
         Date expireDate = new Date(now.getTime() + REFRESH_TOKEN_VALIDATE_TIME);
 
+        Map<String, Object> payloads = new HashMap<>();
+        payloads.put("memberId", Long.toString(memberId));
+
         return Jwts.builder()
+                .claims(payloads)
                 .subject("auth")
                 .issuedAt(now)
                 .expiration(expireDate)
@@ -66,10 +71,16 @@ public class JwtProvider {
         }
     }
 
-    public Long getClaimFromToken(String token, String name) {
+    public Long getLongClaimFromToken(String token, String name) {
         Claims claim = Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload();
 
         return Long.parseLong((String) claim.get(name));
+    }
+
+    public String getStringClaimFromToken(String token, String name) {
+        Claims claim = Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload();
+
+        return (String) claim.get(name);
     }
 
     public Long getClaimFromExpirationToken(String expirationToken, String name) {

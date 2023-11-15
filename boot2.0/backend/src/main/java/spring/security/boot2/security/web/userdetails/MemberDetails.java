@@ -13,12 +13,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MemberDetails implements UserDetails {
     private final long memberId;
+    private final String loginId;
 
     private final List<? extends GrantedAuthority> authorities;
 
     @Builder
-    public MemberDetails(final long memberId, final String... authorities) {
+    public MemberDetails(final long memberId, final String loginId, final String... authorities) {
         this.memberId = memberId;
+        this.loginId = loginId;
         this.authorities = (authorities == null) ? (null) : (AuthorityUtils.createAuthorityList(authorities));
     }
 

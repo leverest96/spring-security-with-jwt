@@ -21,6 +21,6 @@ public class GoogleUser extends OAuth2ProviderUser {
 
     @Override
     public String getProfile() {
-        return null;
+        return (String)getAttributes().get("picture");
     }
 }

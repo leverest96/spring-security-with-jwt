@@ -26,7 +26,7 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 @Slf4j
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
-    public static final String REDIRECT_URL = "/";
+    public static final String REDIRECT_URL = "http://localhost:5174/";
 
     private final MemberRepository memberRepository;
 
@@ -45,14 +45,15 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         final ProviderUser providerUser = principalUser.getProviderUser();
 
-        final Member member = findMemberWithAccessToken(accessToken).orElseGet(
+        final Member member = findMemberWithAccessToken(accessToken, providerUser.getLoginId()).orElseGet(
                 () -> createMember(providerUser)
         );
 
         final long memberId = member.getId();
+        final String loginId = member.getLoginId();
 
-        CookieUtility.addCookie(response, AccessTokenProperties.COOKIE_NAME, accessTokenProvider.createAccessToken(memberId));
-        CookieUtility.addCookie(response, RefreshTokenProperties.COOKIE_NAME, refreshTokenProvider.createRefreshToken());
+        CookieUtility.addCookie(response, AccessTokenProperties.COOKIE_NAME, accessTokenProvider.createAccessToken(memberId, loginId));
+        CookieUtility.addCookie(response, RefreshTokenProperties.COOKIE_NAME, refreshTokenProvider.createRefreshToken(memberId));
 
         final String provider = Character.toUpperCase(member.getLoginType().getSocialName().charAt(0)) + member.getLoginType().getSocialName().substring(1);
 
@@ -61,13 +62,18 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         getRedirectStrategy().sendRedirect(request, response, REDIRECT_URL);
     }
 
-    private Optional<Member> findMemberWithAccessToken(final String accessToken) {
+    private Optional<Member> findMemberWithAccessToken(final String accessToken, final String providedLoginId) {
         if (accessToken == null) {
             return Optional.empty();
         }
 
         try {
-            final long memberId = accessTokenProvider.getClaimFromToken(accessToken, AccessTokenProperties.AccessTokenClaim.MEMBER_ID.getClaim());
+            final long memberId = accessTokenProvider.getLongClaimFromToken(accessToken, AccessTokenProperties.AccessTokenClaim.MEMBER_ID.getClaim());
+            final String loginId = accessTokenProvider.getStringClaimFromToken(accessToken, AccessTokenProperties.AccessTokenClaim.LOGIN_ID.getClaim());
+
+            if (!loginId.equals(providedLoginId)) {
+                return Optional.empty();
+            }
 
             return memberRepository.findById(memberId);
         } catch (final Exception ex) {

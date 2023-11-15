@@ -19,10 +19,12 @@ public class MemberDetailsService implements AuthenticationUserDetailsService<Pr
         try {
             final String accessToken = (String) token.getCredentials();
 
-            final Long memberId = accessTokenProvider.getClaimFromToken(accessToken, "memberId");
+            final Long memberId = accessTokenProvider.getLongClaimFromToken(accessToken, "memberId");
+            final String loginId = accessTokenProvider.getStringClaimFromToken(accessToken, "loginId");
 
             return MemberDetails.builder()
                     .memberId(memberId)
+                    .loginId(loginId)
                     .build();
         } catch (final Exception ex) {
             throw new BadCredentialsException(ex.getMessage());

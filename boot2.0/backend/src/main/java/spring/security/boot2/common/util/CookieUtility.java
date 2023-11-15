@@ -11,8 +11,8 @@ public final class CookieUtility {
     public static Cookie createCookie(final String name, final String value) {
         final Cookie cookie = new Cookie(name, value);
 
-        cookie.setHttpOnly(true);
-        cookie.setSecure(false);
+//        cookie.setHttpOnly(true);
+//        cookie.setSecure(false);
         cookie.setPath("/");
 
         return cookie;

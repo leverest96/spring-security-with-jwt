@@ -1,21 +1,20 @@
 import { useCookies } from 'react-cookie';
 
 const IndexPage = () => {
-  const COOKIE_KEY = "accessToken";
+  const COOKIE_KEY = "access_token";
 
   const [, , removeCookie] = useCookies(COOKIE_KEY);
   const logout = () => {
-    const result = removeCookie(COOKIE_KEY, { path: '/' })
-
-    if (result) {
+    try {
+      removeCookie(COOKIE_KEY, { path: '/' });
       alert("로그아웃을 성공했습니다.");
-    } else {
+    } catch (error) {
       alert("로그인 상태가 아닙니다.");
     }
   };
 
   return (
-    <div className="container is-max-desktop">
+    <div className="container is-max-desktop" >
       <section className="section">
         <div className="box is-flex is-flex-direction-column py-6 has-background-light is-shadowless">
           <div className="block is-flex is-align-content-center is-justify-content-center">

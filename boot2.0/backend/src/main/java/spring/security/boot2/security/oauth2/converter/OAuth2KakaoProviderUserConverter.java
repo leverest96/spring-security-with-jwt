@@ -13,10 +13,6 @@ public final class OAuth2KakaoProviderUserConverter implements ProviderUserConve
             return null;
         }
 
-        if (providerUserRequest.getOAuth2User() instanceof OidcUser) {
-            return null;
-        }
-
         return new KakaoUser(
                 OAuth2Utils.getOtherAttributes(providerUserRequest.getOAuth2User(), "kakao_account", "profile"),
                 providerUserRequest.getOAuth2User(),

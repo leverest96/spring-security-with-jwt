@@ -8,13 +8,12 @@ const MemberPage = () => {
   useEffect(() => {
     const getMember = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/api/member");
+        const response = await axios.get("http://localhost:8080/api/member", { withCredentials: true });
         const { email, nickname } = response.data;
         setEmail(email);
         setNickname(nickname);
-        alert("로그인을 성공했습니다." + response);
       } catch (error) {
-        alert("로그인을 실패했습니다." + error);
+        window.location.replace("/")
       }
     };
 

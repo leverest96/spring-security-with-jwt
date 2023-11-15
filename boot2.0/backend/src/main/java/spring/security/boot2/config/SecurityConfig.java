@@ -25,30 +25,19 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.*;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.CorsUtils;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import spring.security.boot2.common.util.JwtProvider;
 import spring.security.boot2.handler.AccessDeniedExceptionHandler;
 import spring.security.boot2.handler.AuthenticationExceptionHandler;
-import spring.security.boot2.models.users.ProviderUser;
 import spring.security.boot2.properties.AccessTokenProperties;
 import spring.security.boot2.properties.RefreshTokenProperties;
-import spring.security.boot2.properties.SecurityCorsProperties;
 import spring.security.boot2.repository.MemberRepository;
-import spring.security.boot2.security.oauth2.converter.DelegatingProviderUserConverter;
-import spring.security.boot2.security.oauth2.converter.ProviderUserConverter;
-import spring.security.boot2.security.oauth2.converter.ProviderUserRequest;
 import spring.security.boot2.security.oauth2.handler.OAuth2AuthenticationSuccessHandler;
-import spring.security.boot2.security.oauth2.oauth2user.OAuth2MemberService;
 import spring.security.boot2.security.web.authentication.CustomAuthenticationConverter;
 import spring.security.boot2.security.web.authentication.CustomAuthenticationFilter;
 import spring.security.boot2.security.web.authentication.CustomAuthenticationProvider;
 import spring.security.boot2.security.web.userdetails.MemberDetailsService;
-
-import java.util.List;
+import spring.security.boot2.security.oauth2.oauth2user.CustomOAuth2UserService;
 
 @Configuration
 @EnableWebSecurity
@@ -57,13 +46,12 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(final HttpSecurity http,
 //                                                  final CorsConfigurationSource corsConfigurationSource,
                                                   final AuthenticationFilter authenticationFilter,
-                                                  final OAuth2UserService<OAuth2UserRequest, OAuth2User> customOAuth2UserService,
+                                                  final OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService,
                                                   final AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler,
                                                   final AuthenticationFailureHandler authenticationFailureHandler,
                                                   final AuthenticationEntryPoint authenticationEntryPoint,
                                                   final AccessDeniedHandler accessDeniedHandler) throws Exception {
         http.authorizeRequests()
-                .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/member/register", "/api/member/login").permitAll()
                 .anyRequest().authenticated();
@@ -91,7 +79,7 @@ public class SecurityConfig {
                 .baseUri("/login/oauth2/code/*")
                 .and()
                 .userInfoEndpoint()
-                .userService(customOAuth2UserService)
+                .userService(oAuth2UserService)
                 .and()
                 .successHandler(oAuth2AuthenticationSuccessHandler)
                 .failureHandler(authenticationFailureHandler);
@@ -176,9 +164,9 @@ public class SecurityConfig {
 
     @Bean
     public OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService() {
-        ProviderUserConverter<ProviderUserRequest, ProviderUser> providerUserConverter = new DelegatingProviderUserConverter();
+//        ProviderUserConverter<ProviderUserRequest, ProviderUser> providerUserConverter = new DelegatingProviderUserConverter();
 
-        return new OAuth2MemberService(providerUserConverter);
+        return new CustomOAuth2UserService();
     }
 
     @Bean(name = "oAuth2AuthenticationSuccessHandler")

@@ -8,6 +8,8 @@ const LoginPage = () => {
     axios.post("http://localhost:8080/api/member/login", {
       email: email,
       password: password,
+    }, {
+      withCredentials: true
     })
       .then((response) => {
         alert("로그인을 성공했습니다." + response);
@@ -50,6 +52,13 @@ const LoginPage = () => {
             <div className="buttons">
               <button className="button is-info" onClick={login}>로그인</button>
               <a href="/" className="button">돌아가기</a>
+            </div>
+          </div>
+          <div className="block is-flex is-align-content-center is-justify-content-center">
+            <div>
+              <a className='button' style={{ margin: "0 1rem 0 0" }} href='http://localhost:8080/oauth2/authorization/google'>구글</a>
+              <a className='button' style={{ margin: "0 1rem 0 0", backgroundColor: "yellow" }} href='http://localhost:8080/oauth2/authorization/kakao'>카카오</a>
+              <a className='button' style={{ backgroundColor: "green", color: "white" }} href='http://localhost:8080/oauth2/authorization/naver'>네이버</a>
             </div>
           </div>
         </div>

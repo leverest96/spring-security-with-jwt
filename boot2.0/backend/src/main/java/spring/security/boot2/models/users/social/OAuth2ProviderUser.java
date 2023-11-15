@@ -44,7 +44,7 @@ public abstract class OAuth2ProviderUser implements ProviderUser {
 
     @Override
     public GenderType getGenderType() {
-        return null;
+        return GenderType.BLANK;
     }
 
     @Override

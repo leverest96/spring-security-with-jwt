@@ -6,7 +6,7 @@ import spring.security.boot2.models.users.Member;
 import java.util.Optional;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
-    Optional<Member> findByNickname(final String nickname);
+    Optional<Member> findByLoginId(final String loginId);
     Optional<Member> findByEmail(final String email);
     Optional<Member> findById(final long id);
 }

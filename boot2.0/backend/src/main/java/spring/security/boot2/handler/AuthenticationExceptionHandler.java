@@ -37,16 +37,16 @@ public class AuthenticationExceptionHandler implements AuthenticationEntryPoint 
         final String accessToken = (accessTokenCookie == null) ? (null) : (accessTokenCookie.getValue());
 
         try {
-            if (checkAccessTokenExpiration(accessToken)) {
+             if (checkAccessTokenExpiration(accessToken)) {
                 final Cookie refreshTokenCookie = WebUtils.getCookie(request, RefreshTokenProperties.COOKIE_NAME);
                 final String refreshToken = (refreshTokenCookie == null) ? (null) : (refreshTokenCookie.getValue());
 
                 if (verifyRefreshToken(refreshToken)) {
-                    final long memberId = accessTokenProvider.getClaimFromToken(accessToken, AccessTokenProperties.AccessTokenClaim.MEMBER_ID.getClaim());
+                    final long memberId = accessTokenProvider.getLongClaimFromToken(accessToken, AccessTokenProperties.AccessTokenClaim.MEMBER_ID.getClaim());
+                    final String loginId = accessTokenProvider.getStringClaimFromToken(accessToken, AccessTokenProperties.AccessTokenClaim.LOGIN_ID.getClaim());
 
-                    CookieUtility.addCookie(response, AccessTokenProperties.COOKIE_NAME, accessTokenProvider.createAccessToken(memberId));
-
-                    CookieUtility.addCookie(response, RefreshTokenProperties.COOKIE_NAME, refreshTokenProvider.createRefreshToken());
+                    CookieUtility.addCookie(response, AccessTokenProperties.COOKIE_NAME, accessTokenProvider.createAccessToken(memberId, loginId));
+                    CookieUtility.addCookie(response, RefreshTokenProperties.COOKIE_NAME, refreshTokenProvider.createRefreshToken(memberId));
 
                     response.sendRedirect(request.getRequestURI());
                 }
@@ -69,7 +69,7 @@ public class AuthenticationExceptionHandler implements AuthenticationEntryPoint 
                 response.setCharacterEncoding(StandardCharsets.UTF_8.name());
                 response.getWriter().write(responseBody);
             } else if (accessToken == null) {
-                response.sendRedirect("/");
+                response.sendRedirect("http://localhost:5174/");
             } else {
                 response.sendRedirect(request.getRequestURI());
             }

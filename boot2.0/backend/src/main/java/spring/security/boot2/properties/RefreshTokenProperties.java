@@ -17,7 +17,7 @@ public class RefreshTokenProperties extends JwtProperties {
     @RequiredArgsConstructor
     @Getter
     public enum RefreshTokenClaim {
-        MEMBER_ID("id");
+        MEMBER_ID("memberId");
 
         private final String claim;
     }

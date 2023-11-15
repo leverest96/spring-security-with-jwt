@@ -29,8 +29,8 @@ public class MemberService {
     private final JwtProvider accessTokenProvider;
     private final JwtProvider refreshTokenProvider;
 
-    public boolean checkExistence(final String nickname) {
-        return memberRepository.findByNickname(nickname).isEmpty();
+    public boolean checkExistence(final String loginId) {
+        return memberRepository.findByLoginId(loginId).isEmpty();
     }
 
     public void register(final MemberRegisterDto requestDto) {
@@ -72,11 +72,12 @@ public class MemberService {
             throw new IllegalArgumentException("비밀번호 불일치");
         }
 
-        final Long id = member.getId();
+        final Long memberId = member.getId();
+        final String loginId = member.getLoginId();
 
-        final String accessToken = accessTokenProvider.createAccessToken(id);
+        final String accessToken = accessTokenProvider.createAccessToken(memberId, loginId);
 
-        final String refreshToken = refreshTokenProvider.createRefreshToken();
+        final String refreshToken = refreshTokenProvider.createRefreshToken(memberId);
 
         return MemberLoginResponseDto.builder()
                 .accessToken(accessToken)
