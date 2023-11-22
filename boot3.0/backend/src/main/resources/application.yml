@@ -1,30 +1,21 @@
-
 spring:
   config:
     import:
+      - classpath:properties/cors.yml
       - classpath:properties/jwt.yml
-      - classpath:properties/security.yml
+      - classpath:properties/redis.yml
+      - classpath:properties/oauth.yml
 
   datasource:
     driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:test;MODE=MYSQL
+    url: jdbc:h2:mem:boot2;MODE=MYSQL
     username: sa
 
-  #  sql:
-  #    init:
-  #      schema-locations: classpath*:database/schema.sql
-
-  profiles:
-    active:
-      local
-
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
-
     show-sql: true
 
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
 
     properties:
       hibernate:

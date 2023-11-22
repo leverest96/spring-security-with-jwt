@@ -1,12 +1,13 @@
 package com.example.test.service;
 
-import com.auth0.jwt.exceptions.JWTCreationException;
 import com.example.test.domain.Member;
-import com.example.test.domain.Role;
+import com.example.test.domain.enums.GenderType;
+import com.example.test.domain.enums.LoginType;
+import com.example.test.domain.enums.MemberRole;
+import com.example.test.dto.MemberInfoResponseDto;
 import com.example.test.dto.MemberLoginRequestDto;
 import com.example.test.dto.MemberLoginResponseDto;
 import com.example.test.dto.MemberRegisterRequestDto;
-import com.example.test.dto.MemberRegisterResponseDto;
 import com.example.test.exception.MemberException;
 import com.example.test.exception.status.MemberStatus;
 import com.example.test.repository.MemberRepository;
@@ -16,15 +17,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class MemberService {
-
     private final MemberRepository memberRepository;
 
     private final PasswordEncoder passwordEncoder;
@@ -37,26 +36,26 @@ public class MemberService {
     }
 
     @Transactional
-    public MemberRegisterResponseDto register(final MemberRegisterRequestDto requestDto) {
+    public void register(final MemberRegisterRequestDto requestDto) {
         if (checkEmailExistence(requestDto.getEmail())) {
             throw new MemberException(MemberStatus.EXISTING_EMAIL);
         }
 
         final Member member = Member.builder()
+                .loginId(UUID.randomUUID().toString())
+                .nickname(requestDto.getNickname())
                 .email(requestDto.getEmail())
                 .password(passwordEncoder.encode(requestDto.getPassword()))
-                .nickname(requestDto.getNickname())
-                .role((requestDto.isAdmin()) ? (Role.ADMIN) : (Role.USER))
+                .profile("https://play-lh.googleusercontent.com/38AGKCqmbjZ9OuWx4YjssAz3Y0DTWbiM5HB0ove1pNBq_o9mtWfGszjZNxZdwt_vgHo")
+                .roleType(requestDto.isAdmin() ? MemberRole.ADMIN : MemberRole.MEMBER)
+                .loginType(LoginType.NONE)
+                .genderType(GenderType.BLANK)
                 .build();
 
-        final Member result = memberRepository.save(member);
-
-        return MemberRegisterResponseDto.builder()
-                .nickname(result.getNickname())
-                .build();
+        memberRepository.save(member);
     }
 
-    public MemberLoginResponseDto login(final MemberLoginRequestDto requestDto) throws JWTCreationException {
+    public MemberLoginResponseDto login(final MemberLoginRequestDto requestDto) {
         final Optional<Member> result = memberRepository.findByEmail(requestDto.getEmail());
 
         if (result.isEmpty()) {
@@ -69,21 +68,28 @@ public class MemberService {
             throw new MemberException(MemberStatus.INCORRECT_PASSWORD);
         }
 
-        final Map<String, String> payload = new HashMap<>();
+        final Long memberId = member.getId();
+        final String loginId = member.getLoginId();
 
-        payload.put("userId", member.getId().toString());
-        payload.put("email", member.getEmail());
-        payload.put("nickname", member.getNickname());
-        payload.put("role", member.getRole().getDisplayName());
-
-        final Map<String, String> refreshPayload = new HashMap<>();
-
-        payload.put("email", member.getEmail());
+        final String accessToken = accessTokenProvider.createAccessToken(memberId, loginId);
+        final String refreshToken = refreshTokenProvider.createRefreshToken(memberId);
+        final int refreshTokenValidSeconds = refreshTokenProvider.getValidSeconds();
 
         return MemberLoginResponseDto.builder()
-                .accessToken(accessTokenProvider.generate(payload))
-                .refreshToken(refreshTokenProvider.generate(refreshPayload))
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .refreshTokenValidSeconds(refreshTokenValidSeconds)
                 .build();
     }
 
+    public MemberInfoResponseDto member(final String loginId) {
+        final Member member = memberRepository.findByLoginId(loginId).orElseThrow(
+                () -> new MemberException(MemberStatus.NOT_EXISTING_MEMBER)
+        );
+
+        return MemberInfoResponseDto.builder()
+                .email(member.getEmail())
+                .nickname(member.getNickname())
+                .build();
+    }
 }

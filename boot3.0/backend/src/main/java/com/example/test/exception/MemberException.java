@@ -7,7 +7,5 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Getter
 public class MemberException extends RuntimeException {
-
     private final MemberStatus status;
-
 }

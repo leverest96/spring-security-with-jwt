@@ -1,9 +1,7 @@
 package com.example.test.exception.controller;
 
-import com.auth0.jwt.exceptions.JWTCreationException;
 import com.example.test.exception.MemberException;
 import com.example.test.exception.status.MemberStatus;
-import jakarta.validation.ConstraintViolationException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,8 +14,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-import jakarta.validation.ConstraintViolation;
-
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,7 +21,6 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
-
     protected ResponseEntity<Object> handleMethodArgumentNotValid(final MethodArgumentNotValidException ex,
                                                                   final HttpHeaders headers,
                                                                   final HttpStatus status,
@@ -41,27 +36,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.badRequest().body(new ExceptionResponse(messages));
     }
 
-    @ExceptionHandler({ConstraintViolationException.class})
-    public ResponseEntity<Object> handleConstraintViolationException(final ConstraintViolationException ex) {
-        final List<String> messages = ex.getConstraintViolations()
-                .stream()
-                .map(ConstraintViolation::getMessage)
-                .collect(Collectors.toList());
-
-        log.warn("Constraint violation exception occurrence: {}", messages);
-
-        return ResponseEntity.badRequest().body(new ExceptionResponse(messages));
-    }
-
-    @ExceptionHandler({JWTCreationException.class})
-    public ResponseEntity<Object> handleJWTCreationException(final JWTCreationException ex) {
-        final String message = ex.getMessage();
-
-        log.warn("JWT creation exception occurrence: {}", message);
-
-        return ResponseEntity.internalServerError().body(new ExceptionResponse(List.of(message)));
-    }
-
     @ExceptionHandler({MemberException.class})
     public ResponseEntity<Object> handleMemberException(final MemberException ex) {
         final MemberStatus status = ex.getStatus();
@@ -74,9 +48,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @RequiredArgsConstructor
     @Getter
     public static class ExceptionResponse {
-
         private final List<String> messages;
-
     }
-
 }

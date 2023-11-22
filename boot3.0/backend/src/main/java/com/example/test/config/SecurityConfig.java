@@ -2,13 +2,15 @@ package com.example.test.config;
 
 import com.example.test.exception.handler.AccessDeniedExceptionHandler;
 import com.example.test.exception.handler.AuthenticationExceptionHandler;
-import com.example.test.security.filter.MemberAuthenticationFilter;
-import com.example.test.security.authentication.MemberAuthenticationConverter;
 import com.example.test.properties.jwt.AccessTokenProperties;
 import com.example.test.properties.jwt.RefreshTokenProperties;
-import com.example.test.properties.security.SecurityCorsProperties;
-import com.example.test.security.authentication.MemberAuthenticationProvider;
-import com.example.test.security.userdetails.MemberDetailsService;
+import com.example.test.repository.MemberRepository;
+import com.example.test.security.oauth2.handler.OAuth2AuthenticationSuccessHandler;
+import com.example.test.security.oauth2.oauth2userdetails.CustomOAuth2UserService;
+import com.example.test.security.web.authentication.CustomAuthenticationConverter;
+import com.example.test.security.web.authentication.CustomAuthenticationFilter;
+import com.example.test.security.web.authentication.CustomAuthenticationProvider;
+import com.example.test.security.web.userdetails.MemberDetailsService;
 import com.example.test.utility.JwtProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -27,40 +29,42 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.*;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.CorsUtils;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   CorsConfigurationSource corsConfigurationSource,
-                                                   AuthenticationFilter authenticationFilter,
-                                                   AuthenticationEntryPoint authenticationEntryPoint,
-                                                   AccessDeniedHandler accessDeniedHandler) throws Exception {
-        http.cors().configurationSource(corsConfigurationSource);
+    public SecurityFilterChain securityFilterChain(final HttpSecurity http,
+//                                                   final CorsConfigurationSource corsConfigurationSource,
+                                                   final AuthenticationFilter authenticationFilter,
+                                                   final OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService,
+                                                   final AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler,
+                                                   final AuthenticationFailureHandler authenticationFailureHandler,
+                                                   final AuthenticationEntryPoint authenticationEntryPoint,
+                                                   final AccessDeniedHandler accessDeniedHandler) throws Exception {
+//        http.cors().configurationSource(corsConfigurationSource);
 
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         http.csrf().disable()
-                .formLogin().disable()
                 .httpBasic().disable()
-                .rememberMe().disable();
+                .formLogin().disable()
+                .rememberMe().disable()
+                .logout().disable()
+                .headers().disable();
 
         http.authorizeHttpRequests((authorize) -> authorize
-                .requestMatchers(HttpMethod.GET, "/", "/register", "/login").permitAll()
-                .requestMatchers(HttpMethod.GET, "/admin").hasAuthority("관리자")
-                .requestMatchers(HttpMethod.POST, "/api/member/email/**").anonymous()
-                .requestMatchers(HttpMethod.POST, "/api/member").anonymous()
-                .requestMatchers(HttpMethod.POST, "/api/member/login").anonymous()
+                .requestMatchers(HttpMethod.GET, "/api/member/").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/member/register", "/api/member/login", "/api/member/email/**").permitAll()
                 .anyRequest().authenticated()
         );
 
@@ -70,6 +74,19 @@ public class SecurityConfig {
 
         http.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
+        http.oauth2Login()
+                .authorizationEndpoint()
+                .baseUri("/oauth2/authorization")
+                .and()
+                .redirectionEndpoint()
+                .baseUri("/login/oauth2/code/*")
+                .and()
+                .userInfoEndpoint()
+                .userService(oAuth2UserService)
+                .and()
+                .successHandler(oAuth2AuthenticationSuccessHandler)
+                .failureHandler(authenticationFailureHandler);
+
         return http.build();
     }
 
@@ -78,33 +95,32 @@ public class SecurityConfig {
         return web -> web.ignoring()
                 .requestMatchers(CorsUtils::isPreFlightRequest)
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
-                .requestMatchers(PathRequest.toH2Console()); // H2 콘솔에 대한 Security 무시
+                .requestMatchers(PathRequest.toH2Console());
     }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource(final SecurityCorsProperties properties) {
-        final CorsConfiguration corsConfiguration = new CorsConfiguration();
-
-        corsConfiguration.setAllowCredentials(properties.isAllowCredentials());
-        corsConfiguration.setAllowedHeaders(properties.getAllowedHeaders());
-        corsConfiguration.setAllowedMethods(properties.getAllowedMethods());
-        corsConfiguration.setAllowedOrigins(properties.getAllowedOrigins());
-        corsConfiguration.setMaxAge(corsConfiguration.getMaxAge());
-
-        final UrlBasedCorsConfigurationSource corsConfigurationSource = new UrlBasedCorsConfigurationSource();
-
-        corsConfigurationSource.registerCorsConfiguration("/**", corsConfiguration);
-
-        return corsConfigurationSource;
-    }
+//    @Bean
+//    public CorsConfigurationSource corsConfigurationSource(final SecurityCorsProperties properties) {
+//        final CorsConfiguration corsConfiguration = new CorsConfiguration();
+//
+//        corsConfiguration.setAllowCredentials(properties.isAllowCredentials());
+//        corsConfiguration.setAllowedHeaders(properties.getAllowedHeaders());
+//        corsConfiguration.setAllowedMethods(properties.getAllowedMethods());
+//        corsConfiguration.setAllowedOrigins(properties.getAllowedOrigins());
+//        corsConfiguration.setMaxAge(corsConfiguration.getMaxAge());
+//
+//        final UrlBasedCorsConfigurationSource corsConfigurationSource = new UrlBasedCorsConfigurationSource();
+//
+//        corsConfigurationSource.registerCorsConfiguration("/**", corsConfiguration);
+//
+//        return corsConfigurationSource;
+//    }
 
     @Bean
     public AuthenticationFilter authenticationFilter(final AuthenticationManager authenticationManager,
                                                      final AuthenticationConverter authenticationConverter,
                                                      final AuthenticationSuccessHandler authenticationSuccessHandler,
                                                      final AuthenticationFailureHandler authenticationFailureHandler) {
-        final MemberAuthenticationFilter authenticationFilter =
-                new MemberAuthenticationFilter(authenticationManager, authenticationConverter);
+        final AuthenticationFilter authenticationFilter = new CustomAuthenticationFilter(authenticationManager, authenticationConverter);
 
         authenticationFilter.setSuccessHandler(authenticationSuccessHandler);
         authenticationFilter.setFailureHandler(authenticationFailureHandler);
@@ -119,20 +135,8 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationConverter authenticationConverter() {
-        return new MemberAuthenticationConverter();
+        return new CustomAuthenticationConverter();
     }
-
-    @Bean
-    public AuthenticationProvider authenticationProvider(final AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> authenticationUserDetailsService) {
-        return new MemberAuthenticationProvider(authenticationUserDetailsService);
-    }
-
-    @Bean
-    public AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> authenticationUserDetailsService(final @Qualifier("accessTokenProvider") JwtProvider accessTokenProvider) {
-        return new MemberDetailsService(accessTokenProvider);
-    }
-
-    // Handler
 
     @Bean(name = "authenticationSuccessHandler")
     public AuthenticationSuccessHandler authenticationSuccessHandler() {
@@ -142,6 +146,30 @@ public class SecurityConfig {
     @Bean
     public AuthenticationFailureHandler authenticationFailureHandler(final AuthenticationEntryPoint authenticationEntryPoint) {
         return new AuthenticationEntryPointFailureHandler(authenticationEntryPoint);
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider(final AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> authenticationUserDetailsService) {
+        return new CustomAuthenticationProvider(authenticationUserDetailsService);
+    }
+
+    @Bean
+    public AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> authenticationUserDetailsService(
+            final @Qualifier("accessTokenProvider") JwtProvider accessTokenProvider
+    ) {
+        return new MemberDetailsService(accessTokenProvider);
+    }
+
+    @Bean
+    public OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService() {
+        return new CustomOAuth2UserService();
+    }
+
+    @Bean(name = "oAuth2AuthenticationSuccessHandler")
+    public AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler(final MemberRepository memberRepository,
+                                                                           final JwtProvider accessTokenProvider,
+                                                                           final JwtProvider refreshTokenProvider) {
+        return new OAuth2AuthenticationSuccessHandler(memberRepository, accessTokenProvider, refreshTokenProvider);
     }
 
     @Bean

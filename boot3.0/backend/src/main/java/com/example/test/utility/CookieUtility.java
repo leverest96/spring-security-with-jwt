@@ -10,8 +10,8 @@ public final class CookieUtility {
     public static Cookie createCookie(final String name, final String value) {
         final Cookie cookie = new Cookie(name, value);
 
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
+//         cookie.setHttpOnly(true);
+//         cookie.setSecure(false);
         cookie.setPath("/");
 
         return cookie;
@@ -20,6 +20,9 @@ public final class CookieUtility {
     public static Cookie createCookie(final String name, final String value, final int maxAge) {
         final Cookie cookie = createCookie(name, value);
 
+        // cookie.setHttpOnly(true);
+        // cookie.setSecure(false);
+        cookie.setPath("/");
         cookie.setMaxAge(maxAge);
 
         return cookie;
