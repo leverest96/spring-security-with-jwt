@@ -3,7 +3,6 @@ package com.example.test.exception.handler;
 import com.example.test.exception.ExceptionResponse;
 import com.example.test.properties.jwt.AccessTokenProperties;
 import com.example.test.properties.jwt.RefreshTokenProperties;
-import com.example.test.repository.MemberRepository;
 import com.example.test.utility.CookieUtility;
 import com.example.test.utility.JwtProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,8 +23,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class AuthenticationExceptionHandler implements AuthenticationEntryPoint {
-    private final MemberRepository memberRepository;
-
     private final JwtProvider accessTokenProvider;
     private final JwtProvider refreshTokenProvider;
 
