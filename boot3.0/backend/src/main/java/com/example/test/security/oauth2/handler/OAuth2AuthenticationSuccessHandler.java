@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.WebUtils;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -52,7 +53,10 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         final String loginId = member.getLoginId();
 
         CookieUtility.addCookie(response, AccessTokenProperties.COOKIE_NAME, accessTokenProvider.createAccessToken(memberId, loginId));
-        CookieUtility.addCookie(response, RefreshTokenProperties.COOKIE_NAME, refreshTokenProvider.createRefreshToken(memberId), refreshTokenProvider.getValidSeconds());
+
+        String refreshToken = refreshTokenProvider.createRefreshToken(memberId);
+
+        member.updateRefreshToken(refreshToken);
 
         final String provider = Character.toUpperCase(member.getLoginType().getSocialName().charAt(0)) + member.getLoginType().getSocialName().substring(1);
 
@@ -83,6 +87,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private Member createMember(final ProviderUser providerUser) {
         final Member member = Member.builder()
                 .email(providerUser.getEmail())
+                .password(UUID.randomUUID().toString())
                 .nickname(providerUser.getNickname())
                 .loginId(providerUser.getLoginId())
                 .profile(providerUser.getProfile())

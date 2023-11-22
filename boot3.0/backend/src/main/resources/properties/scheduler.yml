@@ -1,0 +1,4 @@
+scheduler:
+  refresh-token-cleaner:
+    enable: true
+    interval-milliseconds: 3600000

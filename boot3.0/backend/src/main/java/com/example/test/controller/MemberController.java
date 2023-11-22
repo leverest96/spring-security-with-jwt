@@ -42,7 +42,6 @@ public class MemberController {
         final MemberLoginResponseDto result = memberService.login(requestDto);
 
         CookieUtility.addCookie(response, AccessTokenProperties.COOKIE_NAME, result.getAccessToken());
-        CookieUtility.addCookie(response, RefreshTokenProperties.COOKIE_NAME, result.getRefreshToken(), result.getRefreshTokenValidSeconds());
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
@@ -57,7 +56,6 @@ public class MemberController {
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(final HttpServletResponse response) {
         CookieUtility.deleteCookie(response, AccessTokenProperties.COOKIE_NAME);
-        CookieUtility.deleteCookie(response, RefreshTokenProperties.COOKIE_NAME);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

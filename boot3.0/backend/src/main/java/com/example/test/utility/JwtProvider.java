@@ -10,9 +10,6 @@ import java.util.*;
 
 @Getter
 public class JwtProvider {
-    private static final Long ACCESS_TOKEN_VALIDATE_TIME = 1000L * 30;
-    private static final Long REFRESH_TOKEN_VALIDATE_TIME = 1000L * 60 * 60 * 24 * 365;
-
     private final SecretKey secretKey;
 
     private final int validSeconds;
@@ -25,7 +22,7 @@ public class JwtProvider {
 
     public String createAccessToken(final long memberId, final String loginId) {
         final Date now = new Date();
-        final Date expireDate = new Date(now.getTime() + ACCESS_TOKEN_VALIDATE_TIME);
+        final Date expireDate = new Date(now.getTime() + validSeconds);
 
         final Map<String, Object> payloads = new HashMap<>();
         payloads.put("memberId", Long.toString(memberId));
@@ -42,7 +39,7 @@ public class JwtProvider {
 
     public String createRefreshToken(final long memberId) {
         final Date now = new Date();
-        final Date expireDate = new Date(now.getTime() + REFRESH_TOKEN_VALIDATE_TIME);
+        final Date expireDate = new Date(now.getTime() + validSeconds);
 
         final Map<String, Object> payloads = new HashMap<>();
         payloads.put("memberId", Long.toString(memberId));

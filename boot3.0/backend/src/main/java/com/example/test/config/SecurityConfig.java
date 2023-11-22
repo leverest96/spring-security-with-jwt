@@ -173,10 +173,11 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationEntryPoint authenticationEntryPoint(final JwtProvider accessTokenProvider,
+    public AuthenticationEntryPoint authenticationEntryPoint(final MemberRepository memberRepository,
+                                                             final JwtProvider accessTokenProvider,
                                                              final JwtProvider refreshTokenProvider,
                                                              final ObjectMapper objectMapper) {
-        return new AuthenticationExceptionHandler(accessTokenProvider, refreshTokenProvider, objectMapper);
+        return new AuthenticationExceptionHandler(memberRepository, accessTokenProvider, refreshTokenProvider, objectMapper);
     }
 
     @Bean

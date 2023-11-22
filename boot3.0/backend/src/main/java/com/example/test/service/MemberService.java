@@ -55,6 +55,7 @@ public class MemberService {
         memberRepository.save(member);
     }
 
+    @Transactional
     public MemberLoginResponseDto login(final MemberLoginRequestDto requestDto) {
         final Optional<Member> result = memberRepository.findByEmail(requestDto.getEmail());
 
@@ -68,12 +69,18 @@ public class MemberService {
             throw new MemberException(MemberStatus.INCORRECT_PASSWORD);
         }
 
+        if (!member.getLoginType().equals(LoginType.NONE)) {
+            throw new MemberException(MemberStatus.INCORRECT_LOGIN_TYPE);
+        }
+
         final Long memberId = member.getId();
         final String loginId = member.getLoginId();
 
         final String accessToken = accessTokenProvider.createAccessToken(memberId, loginId);
         final String refreshToken = refreshTokenProvider.createRefreshToken(memberId);
         final int refreshTokenValidSeconds = refreshTokenProvider.getValidSeconds();
+
+        member.updateRefreshToken(refreshToken);
 
         return MemberLoginResponseDto.builder()
                 .accessToken(accessToken)
@@ -91,5 +98,13 @@ public class MemberService {
                 .email(member.getEmail())
                 .nickname(member.getNickname())
                 .build();
+    }
+
+    public String checkRefreshToken(final long id) {
+        final Member member = memberRepository.findById(id).orElseThrow(
+                () -> new MemberException(MemberStatus.NOT_EXISTING_MEMBER)
+        );
+
+        return member.getRefreshToken();
     }
 }

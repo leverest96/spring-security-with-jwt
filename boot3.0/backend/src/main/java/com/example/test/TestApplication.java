@@ -7,7 +7,6 @@ import com.example.test.properties.security.SecurityCorsProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
 @EnableConfigurationProperties({
@@ -16,7 +15,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
         SecurityCorsProperties.class,
         RedisProperties.class
 })
-@EnableJpaAuditing
 public class TestApplication {
 
     public static void main(String[] args) {

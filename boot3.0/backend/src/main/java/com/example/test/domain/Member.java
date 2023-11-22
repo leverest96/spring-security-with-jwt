@@ -18,16 +18,16 @@ public class Member {
     @Column(name = "member_id")
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String loginId;
 
     @Column(nullable = false)
     private String nickname;
 
-    @Column(nullable = true)
+    @Column(unique = true)
     private String email;
 
-    @Column(nullable = true)
+    @Column(nullable = false)
     private String password;
 
     @Column(nullable = false)
@@ -37,7 +37,7 @@ public class Member {
     @Enumerated(EnumType.STRING)
     private MemberRole roleType;
 
-    @Column(nullable = true)
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private LoginType loginType;
 
@@ -46,6 +46,9 @@ public class Member {
     private GenderType genderType;
 
     private LocalDateTime deletedAt;
+
+    @Column
+    private String refreshToken;
 
     @Builder
     public Member(String loginId,
@@ -64,5 +67,9 @@ public class Member {
         this.roleType = roleType;
         this.loginType = loginType;
         this.genderType = genderType;
+    }
+
+    public void updateRefreshToken(final String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 }

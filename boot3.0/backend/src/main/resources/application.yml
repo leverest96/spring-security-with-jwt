@@ -5,6 +5,7 @@ spring:
       - classpath:properties/jwt.yml
       - classpath:properties/redis.yml
       - classpath:properties/oauth.yml
+      - classpath:properties/scheduler.yml
 
   datasource:
     driver-class-name: org.h2.Driver
