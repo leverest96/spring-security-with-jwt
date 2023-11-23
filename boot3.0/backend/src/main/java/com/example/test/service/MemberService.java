@@ -32,7 +32,7 @@ public class MemberService {
     private final JwtProvider refreshTokenProvider;
 
     public boolean checkEmailExistence(final String email) {
-        return memberRepository.findByEmail(email).isPresent();
+        return memberRepository.findByEmailAndLoginType(email, LoginType.NONE).isPresent();
     }
 
     @Transactional
@@ -57,7 +57,7 @@ public class MemberService {
 
     @Transactional
     public MemberLoginResponseDto login(final MemberLoginRequestDto requestDto) {
-        final Optional<Member> result = memberRepository.findByEmail(requestDto.getEmail());
+        final Optional<Member> result = memberRepository.findByEmailAndLoginType(requestDto.getEmail(), LoginType.NONE);
 
         if (result.isEmpty()) {
             throw new MemberException(MemberStatus.NOT_EXISTING_EMAIL);

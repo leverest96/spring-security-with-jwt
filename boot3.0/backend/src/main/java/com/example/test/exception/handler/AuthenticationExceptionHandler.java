@@ -7,6 +7,7 @@ import com.example.test.exception.status.MemberStatus;
 import com.example.test.properties.jwt.AccessTokenProperties;
 import com.example.test.properties.jwt.RefreshTokenProperties;
 import com.example.test.repository.MemberRepository;
+import com.example.test.security.web.authentication.CustomAuthenticationFilter;
 import com.example.test.utility.CookieUtility;
 import com.example.test.utility.JwtProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -57,7 +58,7 @@ public class AuthenticationExceptionHandler implements AuthenticationEntryPoint 
 
                 final String exRefreshToken = member.getRefreshToken();
 
-                if (verifyRefreshToken(exRefreshToken)) {
+                if (!verifyRefreshToken(exRefreshToken)) {
                     final long exRefreshTokenMemberId = refreshTokenProvider.getLongClaimFromExpirationToken(exRefreshToken,
                             AccessTokenProperties.AccessTokenClaim.MEMBER_ID.getClaim());
 

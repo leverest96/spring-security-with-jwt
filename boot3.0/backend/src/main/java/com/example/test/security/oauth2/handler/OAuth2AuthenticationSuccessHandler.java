@@ -1,6 +1,8 @@
 package com.example.test.security.oauth2.handler;
 
 import com.example.test.domain.Member;
+import com.example.test.exception.MemberException;
+import com.example.test.exception.status.MemberStatus;
 import com.example.test.properties.jwt.AccessTokenProperties;
 import com.example.test.properties.jwt.RefreshTokenProperties;
 import com.example.test.repository.MemberRepository;
@@ -85,6 +87,13 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     }
 
     private Member createMember(final ProviderUser providerUser) {
+        final Optional<Member> existingMember = memberRepository
+                .findByEmailAndLoginType(providerUser.getEmail(), providerUser.getLoginType());
+
+        if (existingMember.isPresent()) {
+            return existingMember.get();
+        }
+
         final Member member = Member.builder()
                 .email(providerUser.getEmail())
                 .password(UUID.randomUUID().toString())

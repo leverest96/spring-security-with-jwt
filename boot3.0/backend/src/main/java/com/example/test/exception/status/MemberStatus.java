@@ -11,7 +11,8 @@ public enum MemberStatus {
     NOT_EXISTING_EMAIL(HttpStatus.NOT_FOUND, "must be an existing email"),
     EXISTING_EMAIL(HttpStatus.CONFLICT, "must not be an existing email"),
     NOT_EXISTING_MEMBER(HttpStatus.NOT_FOUND, "must be an existing member"),
-    INCORRECT_LOGIN_TYPE(HttpStatus.CONFLICT, "must not be a social login");
+    INCORRECT_LOGIN_TYPE(HttpStatus.CONFLICT, "must not be a social login"),
+    EXISTING_MEMBER(HttpStatus.CONFLICT, "must not be an existing member");
 
     private final HttpStatus httpStatus;
     private final String message;
