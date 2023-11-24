@@ -5,6 +5,7 @@ import com.example.test.exception.handler.AuthenticationExceptionHandler;
 import com.example.test.properties.jwt.AccessTokenProperties;
 import com.example.test.properties.jwt.RefreshTokenProperties;
 import com.example.test.repository.MemberRepository;
+import com.example.test.repository.RedisRepository;
 import com.example.test.security.oauth2.handler.OAuth2AuthenticationSuccessHandler;
 import com.example.test.security.oauth2.oauth2userdetails.CustomOAuth2UserService;
 import com.example.test.security.web.authentication.CustomAuthenticationConverter;
@@ -64,7 +65,7 @@ public class SecurityConfig {
 
         http.authorizeHttpRequests((authorize) -> authorize
                 .requestMatchers(HttpMethod.GET, "/api/member/").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/member/register", "/api/member/login", "/api/member/email/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/member/register", "/api/member/login", "/api/member/logout", "/api/member/email/**").permitAll()
                 .anyRequest().authenticated()
         );
 
@@ -118,9 +119,10 @@ public class SecurityConfig {
     @Bean
     public AuthenticationFilter authenticationFilter(final AuthenticationManager authenticationManager,
                                                      final AuthenticationConverter authenticationConverter,
+                                                     final RedisRepository redisRepository,
                                                      final AuthenticationSuccessHandler authenticationSuccessHandler,
                                                      final AuthenticationFailureHandler authenticationFailureHandler) {
-        final AuthenticationFilter authenticationFilter = new CustomAuthenticationFilter(authenticationManager, authenticationConverter);
+        final AuthenticationFilter authenticationFilter = new CustomAuthenticationFilter(authenticationManager, authenticationConverter, redisRepository);
 
         authenticationFilter.setSuccessHandler(authenticationSuccessHandler);
         authenticationFilter.setFailureHandler(authenticationFailureHandler);
@@ -134,8 +136,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationConverter authenticationConverter() {
-        return new CustomAuthenticationConverter();
+    public AuthenticationConverter authenticationConverter(final RedisRepository redisRepository) {
+        return new CustomAuthenticationConverter(redisRepository);
     }
 
     @Bean(name = "authenticationSuccessHandler")
@@ -167,17 +169,19 @@ public class SecurityConfig {
 
     @Bean(name = "oAuth2AuthenticationSuccessHandler")
     public AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler(final MemberRepository memberRepository,
+                                                                           final RedisRepository redisRepository,
                                                                            final JwtProvider accessTokenProvider,
                                                                            final JwtProvider refreshTokenProvider) {
-        return new OAuth2AuthenticationSuccessHandler(memberRepository, accessTokenProvider, refreshTokenProvider);
+        return new OAuth2AuthenticationSuccessHandler(memberRepository, redisRepository, accessTokenProvider, refreshTokenProvider);
     }
 
     @Bean
     public AuthenticationEntryPoint authenticationEntryPoint(final MemberRepository memberRepository,
+                                                             final RedisRepository redisRepository,
                                                              final JwtProvider accessTokenProvider,
                                                              final JwtProvider refreshTokenProvider,
                                                              final ObjectMapper objectMapper) {
-        return new AuthenticationExceptionHandler(memberRepository, accessTokenProvider, refreshTokenProvider, objectMapper);
+        return new AuthenticationExceptionHandler(memberRepository, redisRepository, accessTokenProvider, refreshTokenProvider, objectMapper);
     }
 
     @Bean

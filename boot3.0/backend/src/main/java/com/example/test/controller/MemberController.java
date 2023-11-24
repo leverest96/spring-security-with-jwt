@@ -5,9 +5,7 @@ import com.example.test.dto.MemberLoginRequestDto;
 import com.example.test.dto.MemberLoginResponseDto;
 import com.example.test.dto.MemberRegisterRequestDto;
 import com.example.test.properties.jwt.AccessTokenProperties;
-import com.example.test.properties.jwt.RefreshTokenProperties;
 import com.example.test.security.web.userdetails.MemberDetails;
-import com.example.test.utility.CookieUtility;
 import com.example.test.service.MemberService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -37,11 +35,8 @@ public class MemberController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<MemberLoginResponseDto> login(@RequestBody final MemberLoginRequestDto requestDto,
-                                                        final HttpServletResponse response) {
-        final MemberLoginResponseDto result = memberService.login(requestDto);
-
-        CookieUtility.addCookie(response, AccessTokenProperties.COOKIE_NAME, result.getAccessToken());
+    public ResponseEntity<MemberLoginResponseDto> login(@RequestBody final MemberLoginRequestDto requestDto) {
+        memberService.login(requestDto);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
@@ -54,8 +49,8 @@ public class MemberController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(final HttpServletResponse response) {
-        CookieUtility.deleteCookie(response, AccessTokenProperties.COOKIE_NAME);
+    public ResponseEntity<Void> logout() {
+        memberService.removeAccessToken();
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

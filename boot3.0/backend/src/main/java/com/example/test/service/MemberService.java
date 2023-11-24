@@ -4,6 +4,7 @@ import com.example.test.domain.Member;
 import com.example.test.domain.enums.GenderType;
 import com.example.test.domain.enums.LoginType;
 import com.example.test.domain.enums.MemberRole;
+import com.example.test.domain.redis.AccessToken;
 import com.example.test.dto.MemberInfoResponseDto;
 import com.example.test.dto.MemberLoginRequestDto;
 import com.example.test.dto.MemberLoginResponseDto;
@@ -11,6 +12,7 @@ import com.example.test.dto.MemberRegisterRequestDto;
 import com.example.test.exception.MemberException;
 import com.example.test.exception.status.MemberStatus;
 import com.example.test.repository.MemberRepository;
+import com.example.test.repository.RedisRepository;
 import com.example.test.utility.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,6 +27,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class MemberService {
     private final MemberRepository memberRepository;
+    private final RedisRepository redisRepository;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -80,6 +83,7 @@ public class MemberService {
         final String refreshToken = refreshTokenProvider.createRefreshToken(memberId);
         final int refreshTokenValidSeconds = refreshTokenProvider.getValidSeconds();
 
+        redisRepository.save(new AccessToken(AccessToken.ACCESS_TOKEN_KEY, accessToken));
         member.updateRefreshToken(refreshToken);
 
         return MemberLoginResponseDto.builder()
@@ -100,11 +104,14 @@ public class MemberService {
                 .build();
     }
 
-    public String checkRefreshToken(final long id) {
-        final Member member = memberRepository.findById(id).orElseThrow(
-                () -> new MemberException(MemberStatus.NOT_EXISTING_MEMBER)
-        );
+    @Transactional
+    public void removeAccessToken() {
+        final Optional<AccessToken> accessToken = redisRepository.findById(AccessToken.ACCESS_TOKEN_KEY);
 
-        return member.getRefreshToken();
+        if (accessToken.isPresent()) {
+            redisRepository.deleteById(AccessToken.ACCESS_TOKEN_KEY);
+        } else {
+            throw new IllegalArgumentException("로그인하지 않은 유저입니다.");
+        }
     }
 }

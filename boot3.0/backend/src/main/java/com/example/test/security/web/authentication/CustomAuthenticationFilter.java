@@ -1,5 +1,6 @@
 package com.example.test.security.web.authentication;
 
+import com.example.test.repository.RedisRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,11 +16,14 @@ import java.io.IOException;
 
 public class CustomAuthenticationFilter extends AuthenticationFilter {
     private final AuthenticationManager authenticationManager;
+    private final RedisRepository redisRepository;
 
     public CustomAuthenticationFilter(final AuthenticationManager authenticationManager,
-                                      final AuthenticationConverter authenticationConverter) {
+                                      final AuthenticationConverter authenticationConverter,
+                                      final RedisRepository redisRepository) {
         super(authenticationManager, authenticationConverter);
         this.authenticationManager = authenticationManager;
+        this.redisRepository = redisRepository;
     }
 
     @Override
@@ -27,7 +31,7 @@ public class CustomAuthenticationFilter extends AuthenticationFilter {
                                     final HttpServletResponse response,
                                     final FilterChain filterChain) throws ServletException, IOException {
         try {
-            final CustomAuthenticationConverter authenticationConverter = new CustomAuthenticationConverter();
+            final CustomAuthenticationConverter authenticationConverter = new CustomAuthenticationConverter(redisRepository);
 
             final Authentication jwtAuthenticationToken = authenticationConverter.convert(request);
 

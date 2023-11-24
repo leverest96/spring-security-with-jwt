@@ -1,16 +1,13 @@
 package com.example.test.security.oauth2.handler;
 
 import com.example.test.domain.Member;
-import com.example.test.exception.MemberException;
-import com.example.test.exception.status.MemberStatus;
+import com.example.test.domain.redis.AccessToken;
 import com.example.test.properties.jwt.AccessTokenProperties;
-import com.example.test.properties.jwt.RefreshTokenProperties;
 import com.example.test.repository.MemberRepository;
+import com.example.test.repository.RedisRepository;
 import com.example.test.security.oauth2.oauth2user.ProviderUser;
 import com.example.test.security.oauth2.oauth2userdetails.CustomOAuth2User;
-import com.example.test.utility.CookieUtility;
 import com.example.test.utility.JwtProvider;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +16,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.util.WebUtils;
+
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,6 +28,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     public static final String REDIRECT_URL = "http://localhost:5173/";
 
     private final MemberRepository memberRepository;
+    private final RedisRepository redisRepository;
 
     private final JwtProvider accessTokenProvider;
     private final JwtProvider refreshTokenProvider;
@@ -40,24 +38,21 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     public void onAuthenticationSuccess(final HttpServletRequest request,
                                         final HttpServletResponse response,
                                         final Authentication authentication) throws IOException {
-        final Cookie accessTokenCookie = WebUtils.getCookie(request, AccessTokenProperties.COOKIE_NAME);
-        final String accessToken = (accessTokenCookie == null) ? (null) : (accessTokenCookie.getValue());
-
         final CustomOAuth2User principalUser = (CustomOAuth2User) authentication.getPrincipal();
 
         final ProviderUser providerUser = principalUser.providerUser();
 
-        final Member member = findMemberWithAccessToken(accessToken, providerUser.getLoginId()).orElseGet(
+        final Member member = findMemberWithRedisAccessToken(providerUser.getLoginId()).orElseGet(
                 () -> createMember(providerUser)
         );
 
         final long memberId = member.getId();
         final String loginId = member.getLoginId();
 
-        CookieUtility.addCookie(response, AccessTokenProperties.COOKIE_NAME, accessTokenProvider.createAccessToken(memberId, loginId));
+        final String accessToken = accessTokenProvider.createAccessToken(memberId, loginId);
+        redisRepository.save(new AccessToken(AccessToken.ACCESS_TOKEN_KEY, accessToken));
 
-        String refreshToken = refreshTokenProvider.createRefreshToken(memberId);
-
+        final String refreshToken = refreshTokenProvider.createRefreshToken(memberId);
         member.updateRefreshToken(refreshToken);
 
         final String provider = Character.toUpperCase(member.getLoginType().getSocialName().charAt(0)) + member.getLoginType().getSocialName().substring(1);
@@ -67,12 +62,16 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         getRedirectStrategy().sendRedirect(request, response, REDIRECT_URL);
     }
 
-    private Optional<Member> findMemberWithAccessToken(final String accessToken, final String providedLoginId) {
-        if (accessToken == null) {
+    private Optional<Member> findMemberWithRedisAccessToken(final String providedLoginId) {
+        Optional<AccessToken> accessTokenUnchecked = redisRepository.findById(providedLoginId);
+
+        if (accessTokenUnchecked.isEmpty()) {
             return Optional.empty();
         }
 
         try {
+            String accessToken = accessTokenUnchecked.get().getAccessToken();
+
             final long memberId = accessTokenProvider.getLongClaimFromToken(accessToken, AccessTokenProperties.AccessTokenClaim.MEMBER_ID.getClaim());
             final String loginId = accessTokenProvider.getStringClaimFromToken(accessToken, AccessTokenProperties.AccessTokenClaim.LOGIN_ID.getClaim());
 

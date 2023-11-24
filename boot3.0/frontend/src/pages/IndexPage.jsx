@@ -1,16 +1,15 @@
-import { useCookies } from 'react-cookie';
+import axios from 'axios';
 
 const IndexPage = () => {
-  const COOKIE_KEY = "access_token";
-
-  const [, , removeCookie] = useCookies(COOKIE_KEY);
   const logout = () => {
-    try {
-      removeCookie(COOKIE_KEY, { path: '/' });
-      alert("로그아웃을 성공했습니다.");
-    } catch (error) {
-      alert("로그인 상태가 아닙니다.");
-    }
+    axios.post("http://localhost:8080/api/member/logout")
+      .then((response) => {
+        alert("로그아웃을 성공했습니다." + response);
+        window.location.replace("/");
+      })
+      .catch((error) => {
+        alert("로그인을 실패했습니다." + error);
+      });
   };
 
   return (

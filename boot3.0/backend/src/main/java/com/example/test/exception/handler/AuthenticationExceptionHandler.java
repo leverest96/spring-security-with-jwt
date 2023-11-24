@@ -1,38 +1,36 @@
 package com.example.test.exception.handler;
 
 import com.example.test.domain.Member;
+import com.example.test.domain.redis.AccessToken;
 import com.example.test.exception.ExceptionResponse;
 import com.example.test.exception.MemberException;
 import com.example.test.exception.status.MemberStatus;
 import com.example.test.properties.jwt.AccessTokenProperties;
-import com.example.test.properties.jwt.RefreshTokenProperties;
 import com.example.test.repository.MemberRepository;
-import com.example.test.security.web.authentication.CustomAuthenticationFilter;
-import com.example.test.utility.CookieUtility;
+import com.example.test.repository.RedisRepository;
 import com.example.test.utility.JwtProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.util.WebUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Slf4j
 public class AuthenticationExceptionHandler implements AuthenticationEntryPoint {
     private final MemberRepository memberRepository;
+    private final RedisRepository redisRepository;
 
     private final JwtProvider accessTokenProvider;
     private final JwtProvider refreshTokenProvider;
@@ -44,8 +42,8 @@ public class AuthenticationExceptionHandler implements AuthenticationEntryPoint 
     public void commence(final HttpServletRequest request,
                          final HttpServletResponse response,
                          final AuthenticationException authException) throws IOException {
-        final Cookie accessTokenCookie = WebUtils.getCookie(request, AccessTokenProperties.COOKIE_NAME);
-        String accessToken = (accessTokenCookie == null) ? (null) : (accessTokenCookie.getValue());
+        final Optional<AccessToken> redisAccessToken = redisRepository.findById(AccessToken.ACCESS_TOKEN_KEY);
+        String accessToken = redisAccessToken.map(AccessToken::getAccessToken).orElse((null));
 
         try {
             if (!checkAccessTokenExpiration(accessToken)) {
@@ -75,7 +73,7 @@ public class AuthenticationExceptionHandler implements AuthenticationEntryPoint 
 
                 accessToken = accessTokenProvider.createAccessToken(memberId, loginId);
 
-                CookieUtility.addCookie(response, AccessTokenProperties.COOKIE_NAME, accessToken);
+                redisRepository.save(new AccessToken(AccessToken.ACCESS_TOKEN_KEY, accessToken));
 
                 response.sendRedirect(request.getRequestURI());
             }
@@ -84,7 +82,7 @@ public class AuthenticationExceptionHandler implements AuthenticationEntryPoint 
 
             log.warn("Authentication exception occurrence: {}", authException.getMessage());
 
-            CookieUtility.deleteCookie(response, AccessTokenProperties.COOKIE_NAME);
+            redisRepository.findById(AccessToken.ACCESS_TOKEN_KEY).ifPresent(redisRepository::delete);
 
             if (uriTokens.length > 0 && uriTokens[0].equals("api")) {
                 final String responseBody = objectMapper.writeValueAsString(
